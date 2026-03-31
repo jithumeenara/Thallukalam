@@ -250,11 +250,11 @@ html, body, #root {
   );
 }
 
-/* ─── Mobile: show full banner video without cropping ─── */
+/* ─── Mobile: video fills screen (cover) — no blank gaps ─── */
 @media (max-width: 640px) {
   .canvas-wrapper canvas {
-    object-fit: contain;
-    object-position: center top;
+    object-fit: cover;
+    object-position: center center;
   }
 }
 

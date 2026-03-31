@@ -197,17 +197,26 @@ export default function HeroSection() {
       {/* ── Hero content ── */}
       <div className="relative z-30 flex flex-col items-center justify-center min-h-screen px-4 pt-16 pb-28 text-center">
 
-        {/* Logo — always dancing */}
+        {/* Title — Anek Malayalam Condensed */}
         <div
-          className="w-[min(560px,78vw)] mb-6"
+          className="mb-6 px-2"
           style={{ animation: 'fade-up 1s ease-out 0.3s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.3s infinite' }}
         >
-          <img
-            src="/logo.svg"
-            alt="തല്ലുകാലം"
-            className="w-full h-auto"
-            draggable={false}
-          />
+          <h1
+            className="font-malayalam font-black text-center leading-none select-none"
+            style={{
+              fontSize: 'clamp(3.8rem, 20vw, 10rem)',
+              background: 'linear-gradient(170deg, #FFD966 0%, #F0C040 20%, #C9A227 55%, #7A500A 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter:
+                'drop-shadow(0 0 28px rgba(201,162,39,0.75)) drop-shadow(0 4px 14px rgba(0,0,0,0.95)) drop-shadow(0 0 70px rgba(139,26,26,0.45))',
+              letterSpacing: '0.03em',
+            }}
+          >
+            തല്ലുകാലം
+          </h1>
         </div>
 
 
