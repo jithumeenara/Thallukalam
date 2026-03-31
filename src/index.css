@@ -249,3 +249,182 @@ html, body, #root {
     rgba(0, 0, 0, 0.75) 100%
   );
 }
+
+/* ─── Mobile: show full banner video without cropping ─── */
+@media (max-width: 640px) {
+  .canvas-wrapper canvas {
+    object-fit: contain;
+    object-position: center top;
+  }
+}
+
+/* ─── Card entrance animation ─── */
+.card-hidden {
+  opacity: 0;
+  transform: translateY(36px);
+}
+
+.card-in-view {
+  animation: card-entrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes card-entrance {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Section heading entrance ─── */
+.heading-hidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.heading-in-view {
+  animation: card-entrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─── Video popup modal ─── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: modal-backdrop-in 0.25s ease-out forwards;
+}
+
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-backdrop.closing {
+  animation: modal-backdrop-out 0.2s ease-in forwards;
+}
+
+@keyframes modal-backdrop-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  background: #080b10;
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(201, 162, 39, 0.08),
+    0 32px 100px rgba(0, 0, 0, 0.95),
+    0 0 80px rgba(201, 162, 39, 0.1);
+  animation: modal-box-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  overflow: hidden;
+}
+
+@keyframes modal-box-in {
+  from { opacity: 0; transform: scale(0.86) translateY(28px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-box.closing {
+  animation: modal-box-out 0.2s ease-in forwards;
+}
+
+@keyframes modal-box-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.92) translateY(16px); }
+}
+
+.modal-top-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #C9A227, #C0392B, #C9A227, transparent);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background: rgba(7, 10, 13, 0.95);
+  border-bottom: 1px solid rgba(42, 48, 64, 0.7);
+}
+
+.modal-video-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  position: relative;
+}
+
+.modal-video-wrap video {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.modal-video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #070A0D;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 10;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(139, 26, 26, 0.45);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+  color: #e8e0d0;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: rgba(192, 57, 43, 0.65);
+  border-color: rgba(201, 162, 39, 0.6);
+  box-shadow: 0 0 14px 3px rgba(201, 162, 39, 0.2);
+}
+
+/* Play indicator on card */
+.card-play-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: rgba(201, 162, 39, 0.8);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+
+.card-play-hint.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
