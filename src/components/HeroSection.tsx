@@ -3,6 +3,10 @@ import Lottie from 'lottie-react'
 import goldSpinner from '../animations/gold-spinner.json'
 import loadingDots from '../animations/loading-dots.json'
 
+// ── Video-first approach: use banner.mp4/webm if available, fallback to GIF frames
+const BANNER_VIDEO_WEBM = '/banar_video/banner.webm'
+const BANNER_VIDEO_MP4  = '/banar_video/banner.mp4'
+
 const FRAME_COUNT = 192
 const TARGET_FPS  = 24
 const FRAME_MS    = 1000 / TARGET_FPS
@@ -22,18 +26,46 @@ const HERO_PARTICLES = Array.from({ length: 14 }, (_, i) => ({
 }))
 
 type LoadState = 'loading' | 'ready'
+type BannerMode = 'unknown' | 'video' | 'frames'
 
 export default function HeroSection() {
-  const canvasRef   = useRef<HTMLCanvasElement>(null)
-  const framesRef   = useRef<HTMLImageElement[]>([])
-  const frameIdxRef = useRef(0)
-  const lastTimeRef = useRef(0)
-  const rafRef      = useRef<number>(0)
+  const canvasRef    = useRef<HTMLCanvasElement>(null)
+  const videoRef     = useRef<HTMLVideoElement>(null)
+  const framesRef    = useRef<HTMLImageElement[]>([])
+  const frameIdxRef  = useRef(0)
+  const lastTimeRef  = useRef(0)
+  const rafRef       = useRef<number>(0)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [progress,  setProgress]  = useState(0)
+  const [mode,      setMode]      = useState<BannerMode>('unknown')
 
-  // ── Preload all 192 frames ─────────────────────────────────────────
+  // ── Try video file first (fast), fallback to GIF frames ───────────────
   useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    function onCanPlay() {
+      setMode('video')
+      setLoadState('ready')
+    }
+    function onError() {
+      // Video not available — fall back to GIF frames
+      setMode('frames')
+    }
+
+    video.addEventListener('canplay', onCanPlay)
+    video.addEventListener('error', onError)
+    video.load()
+
+    return () => {
+      video.removeEventListener('canplay', onCanPlay)
+      video.removeEventListener('error', onError)
+    }
+  }, [])
+
+  // ── Preload GIF frames (only if video not available) ──────────────────
+  useEffect(() => {
+    if (mode !== 'frames') return
     let cancelled = false
     let loaded    = 0
     const images: HTMLImageElement[] = new Array(FRAME_COUNT)
@@ -56,9 +88,9 @@ export default function HeroSection() {
       images[i]   = img
     }
     return () => { cancelled = true }
-  }, [])
+  }, [mode])
 
-  // ── Canvas 24 fps loop ─────────────────────────────────────────────
+  // ── Canvas 24 fps loop (GIF frames fallback) ──────────────────────────
   const startAnimation = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -93,10 +125,16 @@ export default function HeroSection() {
   }, [])
 
   useEffect(() => {
-    if (loadState !== 'ready') return
+    if (loadState !== 'ready' || mode !== 'frames') return
     startAnimation()
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
-  }, [loadState, startAnimation])
+  }, [loadState, mode, startAnimation])
+
+  // ── Auto-play video when ready ────────────────────────────────────────
+  useEffect(() => {
+    if (loadState !== 'ready' || mode !== 'video') return
+    videoRef.current?.play().catch(() => {})
+  }, [loadState, mode])
 
   return (
     <section className="relative w-full sm:min-h-screen overflow-hidden bg-cinema-bg font-malayalam">
@@ -114,11 +152,26 @@ export default function HeroSection() {
         />
       </div>
 
-      {/* Canvas background */}
+      {/* Canvas/Video background */}
       <div className="canvas-wrapper">
+        {/* Video element (used when banner.mp4/webm exists — fast) */}
+        <video
+          ref={videoRef}
+          loop
+          muted
+          playsInline
+          preload="auto"
+          style={{ display: mode === 'video' && loadState === 'ready' ? 'block' : 'none' }}
+          aria-hidden="true"
+        >
+          <source src={BANNER_VIDEO_WEBM} type="video/webm" />
+          <source src={BANNER_VIDEO_MP4}  type="video/mp4" />
+        </video>
+
+        {/* Canvas fallback (used when no video file) */}
         <canvas
           ref={canvasRef}
-          style={{ display: loadState === 'ready' ? 'block' : 'none' }}
+          style={{ display: mode === 'frames' && loadState === 'ready' ? 'block' : 'none' }}
           aria-hidden="true"
         />
       </div>
@@ -138,12 +191,16 @@ export default function HeroSection() {
           <div className="w-24 h-8">
             <Lottie animationData={loadingDots} loop autoplay className="w-full h-full" />
           </div>
-          <div className="loading-bar-track mt-4">
-            <div className="loading-bar-fill" style={{ width: `${progress}%` }} />
-          </div>
-          <p className="text-cinema-border/45 text-xs mt-2 tabular-nums font-mono">
-            {progress}%
-          </p>
+          {mode === 'frames' && (
+            <>
+              <div className="loading-bar-track mt-4">
+                <div className="loading-bar-fill" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="text-cinema-border/45 text-xs mt-2 tabular-nums font-mono">
+                {progress}%
+              </p>
+            </>
+          )}
         </div>
       )}
 
