@@ -250,11 +250,19 @@ html, body, #root {
   );
 }
 
-/* ─── Mobile: video fills screen (cover) — no blank gaps ─── */
-@media (max-width: 640px) {
+/* ─── Mobile: canvas-wrapper becomes a flow 16:9 box (no crop, no blank gap) ─── */
+@media (max-width: 639px) {
+  .canvas-wrapper {
+    position: relative;
+    inset: unset;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
   .canvas-wrapper canvas {
-    object-fit: cover;
-    object-position: center center;
+    /* canvas pixel buffer is also 16:9 — fill means zero distortion, zero crop */
+    object-fit: fill;
   }
 }
 

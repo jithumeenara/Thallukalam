@@ -99,7 +99,7 @@ export default function HeroSection() {
   }, [loadState, startAnimation])
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden bg-cinema-bg font-malayalam">
+    <section className="relative w-full sm:min-h-screen overflow-hidden bg-cinema-bg font-malayalam">
 
       {/* Canvas background */}
       <div className="canvas-wrapper">
@@ -195,35 +195,26 @@ export default function HeroSection() {
       ))}
 
       {/* ── Hero content ── */}
-      <div className="relative z-30 flex flex-col items-center justify-center min-h-screen px-4 pt-16 pb-28 text-center">
+      <div className="relative z-30 flex flex-col items-center justify-center sm:min-h-screen px-4 pt-6 sm:pt-16 pb-8 sm:pb-28 text-center">
 
-        {/* Title — Anek Malayalam Condensed */}
+        {/* Logo */}
         <div
-          className="mb-6 px-2"
+          className="w-[min(560px,78vw)] mb-6"
           style={{ animation: 'fade-up 1s ease-out 0.3s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.3s infinite' }}
         >
-          <h1
-            className="font-malayalam font-black text-center leading-none select-none"
-            style={{
-              fontSize: 'clamp(3.8rem, 20vw, 10rem)',
-              background: 'linear-gradient(170deg, #FFD966 0%, #F0C040 20%, #C9A227 55%, #7A500A 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter:
-                'drop-shadow(0 0 28px rgba(201,162,39,0.75)) drop-shadow(0 4px 14px rgba(0,0,0,0.95)) drop-shadow(0 0 70px rgba(139,26,26,0.45))',
-              letterSpacing: '0.03em',
-            }}
-          >
-            തല്ലുകാലം
-          </h1>
+          <img
+            src="/logo.svg"
+            alt="തല്ലുകാലം"
+            className="w-full h-auto"
+            draggable={false}
+          />
         </div>
 
 
 
-        {/* Scroll hint */}
+        {/* Scroll hint — hidden on mobile */}
         <div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-35"
+          className="hidden sm:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2 opacity-35"
           style={{ animation: 'fade-up 1s ease-out 1.5s both' }}
         >
           <p className="text-cinema-gold/70 text-xs tracking-[0.3em] uppercase">Scroll</p>
