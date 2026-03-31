@@ -53,19 +53,6 @@ export default function Footer() {
           ഇനി വേണ്ട ആ നശിച്ച കാലം
         </p>
 
-        {/* Full-width divider */}
-        <div
-          className="w-full h-px mt-2"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(42,48,64,0.6), transparent)' }}
-        />
-
-        {/* Copyright */}
-        <p
-          className="text-cinema-border/40 tracking-widest uppercase"
-          style={{ fontSize: '0.65rem', letterSpacing: '0.22em' }}
-        >
-          © 2024 &nbsp;·&nbsp; തല്ലുകാലം &nbsp;·&nbsp; All Rights Reserved
-        </p>
       </div>
     </footer>
   )
