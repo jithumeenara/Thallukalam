@@ -19,7 +19,7 @@ export default {
         },
       },
       fontFamily: {
-        malayalam: ['"Anek Malayalam Condensed"', 'sans-serif'],
+        malayalam: ['"Anek Malayalam Variable"', 'sans-serif'],
       },
       keyframes: {
         'logo-enter': {

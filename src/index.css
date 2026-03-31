@@ -17,6 +17,11 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── Anek Malayalam Variable — force condensed width axis everywhere ─── */
+.font-malayalam {
+  font-stretch: condensed;   /* = 75% on the wdth axis */
+}
+
 /* ─── Scanline overlay (CRT effect) ─── */
 .scanline-overlay {
   position: absolute;
