@@ -293,24 +293,29 @@ function Card({ card, index, onOpenVideo }: CardProps) {
 
           {/* Text */}
           <div>
-            <p
-              className="font-malayalam text-[0.72rem] tracking-[0.2em] uppercase mb-1.5 transition-colors duration-300"
-              style={{ color: hovered ? card.accentColor : 'rgba(212,197,160,0.55)' }}
-            >
-              {card.title}
-            </p>
+            {/* "തമ്മിൽ തല്ലി" — bold main line */}
             <h3
-              className="font-malayalam font-semibold leading-snug text-[#e0d5b8] tracking-wide"
+              className="font-malayalam font-black leading-tight text-[#f0e8cc]"
               style={{
-                fontSize: 'clamp(0.95rem, 1.8vw, 1.12rem)',
+                fontSize: 'clamp(1.2rem, 4vw, 1.55rem)',
                 textShadow: hovered
-                  ? `0 0 24px rgba(${card.accentRgb},0.7), 0 2px 8px rgba(0,0,0,0.8)`
-                  : '0 2px 6px rgba(0,0,0,0.7)',
+                  ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)`
+                  : '0 2px 8px rgba(0,0,0,0.8)',
                 transition: 'text-shadow 0.3s ease',
               }}
             >
-              {card.subtitle}
+              {card.title}
             </h3>
+            {/* Subtitle — accent coloured */}
+            <p
+              className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
+              style={{
+                fontSize: 'clamp(1rem, 3.2vw, 1.25rem)',
+                color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)',
+              }}
+            >
+              {card.subtitle}
+            </p>
           </div>
 
           {/* Bottom slide bar */}
@@ -372,17 +377,17 @@ export default function CardsGrid() {
 
   return (
     <>
-      <section className="relative py-20 px-4 sm:px-6 bg-cinema-deep font-malayalam overflow-hidden">
-        {/* Top fade */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-cinema-bg to-cinema-deep pointer-events-none z-10" />
+      <section className="relative pt-4 sm:pt-20 pb-20 px-3 sm:px-6 bg-cinema-deep font-malayalam overflow-hidden">
+        {/* Top fade — shorter on mobile to close the gap */}
+        <div className="absolute top-0 left-0 right-0 h-8 sm:h-24 bg-gradient-to-b from-cinema-bg to-cinema-deep pointer-events-none z-10" />
 
         <div className="noise-overlay opacity-[0.025]" />
 
-        <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="relative z-10 w-full">
           {/* Section heading */}
           <div
             ref={headingRef}
-            className={`text-center mb-12 ${headingVisible ? 'heading-in-view' : 'heading-hidden'}`}
+            className={`text-center mb-6 sm:mb-12 ${headingVisible ? 'heading-in-view' : 'heading-hidden'}`}
           >
             <div className="flex items-center justify-center gap-4 mb-5">
               <div className="w-16 sm:w-28 gold-line" />

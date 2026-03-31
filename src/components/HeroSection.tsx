@@ -101,6 +101,19 @@ export default function HeroSection() {
   return (
     <section className="relative w-full sm:min-h-screen overflow-hidden bg-cinema-bg font-malayalam">
 
+      {/* ── Mobile only: Logo appears ABOVE the banner video ── */}
+      <div className="sm:hidden relative z-30 flex justify-center items-center py-4 bg-cinema-bg">
+        <img
+          src="/logo.svg"
+          alt="തല്ലുകാലം"
+          className="w-[72vw] h-auto"
+          draggable={false}
+          style={{
+            animation: 'fade-up 0.9s ease-out 0.2s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.2s infinite',
+          }}
+        />
+      </div>
+
       {/* Canvas background */}
       <div className="canvas-wrapper">
         <canvas
@@ -113,40 +126,18 @@ export default function HeroSection() {
       {/* ── Lottie loading overlay ── */}
       {loadState === 'loading' && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-cinema-bg">
-
-          {/* Lottie: concentric spinning gold + red arcs */}
           <div className="relative w-36 h-36 mb-4">
-            <Lottie
-              animationData={goldSpinner}
-              loop
-              autoplay
-              className="w-full h-full"
-            />
-            {/* Logo centred inside the Lottie ring */}
+            <Lottie animationData={goldSpinner} loop autoplay className="w-full h-full" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <img
-                src="/logo.svg"
-                alt=""
-                className="w-12 h-12 opacity-60 animate-flicker"
-              />
+              <img src="/logo.svg" alt="" className="w-12 h-12 opacity-60 animate-flicker" />
             </div>
           </div>
-
           <p className="text-cinema-gold/55 text-[0.7rem] tracking-[0.28em] uppercase mb-4">
             ലോഡ് ചെയ്യുന്നു...
           </p>
-
-          {/* Lottie: staggered gold dots */}
           <div className="w-24 h-8">
-            <Lottie
-              animationData={loadingDots}
-              loop
-              autoplay
-              className="w-full h-full"
-            />
+            <Lottie animationData={loadingDots} loop autoplay className="w-full h-full" />
           </div>
-
-          {/* Classic progress bar below */}
           <div className="loading-bar-track mt-4">
             <div className="loading-bar-fill" style={{ width: `${progress}%` }} />
           </div>
@@ -194,10 +185,8 @@ export default function HeroSection() {
         />
       ))}
 
-      {/* ── Hero content ── */}
-      <div className="relative z-30 flex flex-col items-center justify-center sm:min-h-screen px-4 pt-6 sm:pt-16 pb-8 sm:pb-28 text-center">
-
-        {/* Logo */}
+      {/* ── Desktop hero content (logo centred on video — hidden on mobile) ── */}
+      <div className="hidden sm:flex relative z-30 flex-col items-center justify-center min-h-screen px-4 pt-16 pb-28 text-center">
         <div
           className="w-[min(560px,78vw)] mb-6"
           style={{ animation: 'fade-up 1s ease-out 0.3s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.3s infinite' }}
@@ -210,11 +199,9 @@ export default function HeroSection() {
           />
         </div>
 
-
-
-        {/* Scroll hint — hidden on mobile */}
+        {/* Scroll hint */}
         <div
-          className="hidden sm:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2 opacity-35"
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-35"
           style={{ animation: 'fade-up 1s ease-out 1.5s both' }}
         >
           <p className="text-cinema-gold/70 text-xs tracking-[0.3em] uppercase">Scroll</p>
