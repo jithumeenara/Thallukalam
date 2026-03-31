@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   loadCards, saveCards, CardData,
   extractYouTubeId, ACCENT_PRESETS, THUMBNAIL_OPTIONS,
@@ -114,9 +114,21 @@ interface EditModalProps {
 function EditModal({ card, onSave, onClose }: EditModalProps) {
   const [draft, setDraft] = useState<CardData>({ ...card })
   const [ytErr, setYtErr] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function set<K extends keyof CardData>(key: K, val: CardData[K]) {
     setDraft(d => ({ ...d, [key]: val }))
+  }
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      if (result) set('thumbnail', result)
+    }
+    reader.readAsDataURL(file)
   }
 
   function handleAccent(preset: typeof ACCENT_PRESETS[0]) {
@@ -204,20 +216,64 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
 
           {/* Thumbnail */}
           <label className="admin-label">Card Background Thumbnail</label>
+
+          {/* Current preview */}
+          {draft.thumbnail && (
+            <div className="relative mb-2 rounded overflow-hidden border border-cinema-border/40" style={{ aspectRatio: '16/9', maxHeight: '140px' }}>
+              <img src={draft.thumbnail} alt="thumbnail preview" className="w-full h-full object-cover" />
+              <div className="absolute bottom-1 right-1 bg-black/60 text-[10px] text-cinema-gold/70 px-1.5 py-0.5 rounded">
+                preview
+              </div>
+            </div>
+          )}
+
+          {/* Upload custom image */}
+          <div className="flex gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="admin-btn-primary flex items-center gap-2 text-sm"
+            >
+              <span>📁</span> Upload Image
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            {draft.thumbnail.startsWith('data:') && (
+              <button
+                type="button"
+                onClick={() => set('thumbnail', THUMBNAIL_OPTIONS[0])}
+                className="admin-btn-ghost text-sm"
+              >
+                ✕ Remove
+              </button>
+            )}
+          </div>
+
+          {/* URL input */}
           <input
             type="text"
-            value={draft.thumbnail}
+            value={draft.thumbnail.startsWith('data:') ? '(custom uploaded image)' : draft.thumbnail}
+            readOnly={draft.thumbnail.startsWith('data:')}
             onChange={e => set('thumbnail', e.target.value)}
             className="admin-input mb-2"
-            placeholder="https://... or leave default"
+            placeholder="https://... or paste image URL"
+            style={{ opacity: draft.thumbnail.startsWith('data:') ? 0.5 : 1 }}
           />
+
+          {/* Preset GIF options */}
+          <p className="text-cinema-border/40 text-[10px] tracking-widest uppercase mb-1.5">Or pick a preset</p>
           <div className="flex gap-2 flex-wrap mb-4">
             {THUMBNAIL_OPTIONS.map(t => (
               <button
                 key={t}
                 type="button"
                 onClick={() => set('thumbnail', t)}
-                className={`w-12 h-8 rounded border overflow-hidden ${draft.thumbnail === t ? 'border-cinema-gold' : 'border-cinema-border/40'}`}
+                className={`w-12 h-8 rounded border overflow-hidden transition-all ${draft.thumbnail === t ? 'border-cinema-gold scale-110' : 'border-cinema-border/40'}`}
                 title={t}
               >
                 <img src={t} className="w-full h-full object-cover" alt="" />
