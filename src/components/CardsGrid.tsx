@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { loadCards, extractYouTubeId, CardData } from '../data/cards'
+import { loadCards, fetchRemoteCards, saveCardsLocal, extractYouTubeId, CardData } from '../data/cards'
 
 // Crack SVG paths
 function CrackSvg({ color, accentRgb }: { color: string; accentRgb: string }) {
@@ -213,9 +213,19 @@ function Card({ card, index, onOpen }: CardProps) {
 
 // ── CardsGrid ─────────────────────────────────────────────────────────────
 export default function CardsGrid() {
-  const [cards] = useState<CardData[]>(() => loadCards())
+  const [cards, setCards] = useState<CardData[]>(() => loadCards())
   const [activeCard, setActiveCard] = useState<CardData | null>(null)
   const [headingVisible, setHeadingVisible] = useState(false)
+
+  // Fetch latest data from GitHub-backed JSON so all devices see admin updates
+  useEffect(() => {
+    fetchRemoteCards().then(remote => {
+      if (remote) {
+        setCards(remote)
+        saveCardsLocal(remote)
+      }
+    })
+  }, [])
   const headingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

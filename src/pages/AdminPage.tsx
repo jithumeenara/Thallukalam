@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import {
-  loadCards, saveCards, CardData,
+  loadCards, saveCardsLocal, saveCardsToGitHub, testGitHubToken,
+  GH_TOKEN_KEY, CardData,
   extractYouTubeId, ACCENT_PRESETS, THUMBNAIL_OPTIONS,
 } from '../data/cards'
 
@@ -313,10 +314,20 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
 
 // ── Admin Panel ────────────────────────────────────────────────────────────
 
+type SaveStatus = 'idle' | 'saving' | 'success' | 'error' | 'local'
+
 function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [cards, setCards] = useState<CardData[]>(() => loadCards())
   const [editing, setEditing] = useState<CardData | null>(null)
-  const [saved, setSaved] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveMsg, setSaveMsg] = useState('')
+
+  // GitHub token state
+  const [token, setToken] = useState(() => localStorage.getItem(GH_TOKEN_KEY) ?? '')
+  const [tokenInput, setTokenInput] = useState(() => localStorage.getItem(GH_TOKEN_KEY) ?? '')
+  const [showTokenSection, setShowTokenSection] = useState(false)
+  const [tokenStatus, setTokenStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle')
+  const [tokenMsg, setTokenMsg] = useState('')
 
   function handleSaveCard(updated: CardData) {
     setCards(prev => {
@@ -341,10 +352,43 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setEditing(emptyCard(nextId))
   }
 
-  function handleSaveAll() {
-    saveCards(cards)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+  async function handleSaveAll() {
+    if (token) {
+      setSaveStatus('saving')
+      setSaveMsg('Saving to GitHub...')
+      try {
+        await saveCardsToGitHub(token, cards)
+        setSaveStatus('success')
+        setSaveMsg('✓ Saved! Site will update in ~2 minutes.')
+        setTimeout(() => { setSaveStatus('idle'); setSaveMsg('') }, 5000)
+      } catch (err) {
+        setSaveStatus('error')
+        setSaveMsg(`✗ ${(err as Error).message}`)
+        setTimeout(() => { setSaveStatus('idle'); setSaveMsg('') }, 8000)
+      }
+    } else {
+      saveCardsLocal(cards)
+      setSaveStatus('local')
+      setSaveMsg('Saved locally. (Set GitHub token for all-device sync.)')
+      setTimeout(() => { setSaveStatus('idle'); setSaveMsg('') }, 4000)
+    }
+  }
+
+  async function handleTestToken() {
+    const t = tokenInput.trim()
+    if (!t) return
+    setTokenStatus('testing')
+    setTokenMsg('Testing...')
+    try {
+      await testGitHubToken(t)
+      localStorage.setItem(GH_TOKEN_KEY, t)
+      setToken(t)
+      setTokenStatus('ok')
+      setTokenMsg('✓ Token works! Saved.')
+    } catch (err) {
+      setTokenStatus('fail')
+      setTokenMsg(`✗ ${(err as Error).message}`)
+    }
   }
 
   const ytId = (url: string) => extractYouTubeId(url)
@@ -369,17 +413,73 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
       <div className="max-w-5xl mx-auto px-4 py-6">
 
+        {/* GitHub Sync Settings */}
+        <div className="mb-6 bg-cinema-deep border border-cinema-border/40 rounded-sm overflow-hidden">
+          <button
+            className="w-full flex items-center justify-between px-4 py-3 text-left"
+            onClick={() => setShowTokenSection(s => !s)}
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold tracking-wider text-cinema-gold/80">
+              <span>{token ? '🟢' : '⚙'}</span>
+              GitHub Sync {token ? '— Connected' : '— Not configured'}
+            </span>
+            <span className="text-cinema-border/60 text-xs">{showTokenSection ? '▲ Hide' : '▼ Configure'}</span>
+          </button>
+
+          {showTokenSection && (
+            <div className="px-4 pb-4 border-t border-cinema-border/20">
+              <p className="text-cinema-border/60 text-xs mt-3 mb-3 leading-relaxed">
+                Paste a GitHub Personal Access Token (PAT) with <strong className="text-cinema-gold/70">repo</strong> scope.
+                Once set, "Save All" will commit changes to GitHub — making them visible on all devices in ~2 minutes.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={tokenInput}
+                  onChange={e => { setTokenInput(e.target.value); setTokenStatus('idle'); setTokenMsg('') }}
+                  className="admin-input flex-1"
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                />
+                <button
+                  onClick={handleTestToken}
+                  disabled={tokenStatus === 'testing'}
+                  className="admin-btn-primary whitespace-nowrap"
+                >
+                  {tokenStatus === 'testing' ? 'Testing…' : 'Test & Save'}
+                </button>
+              </div>
+              {tokenMsg && (
+                <p className={`text-xs mt-2 ${tokenStatus === 'ok' ? 'text-green-400' : tokenStatus === 'fail' ? 'text-red-400' : 'text-cinema-border/60'}`}>
+                  {tokenMsg}
+                </p>
+              )}
+              {token && (
+                <button
+                  className="mt-2 text-xs text-red-400/70 hover:text-red-400"
+                  onClick={() => { localStorage.removeItem(GH_TOKEN_KEY); setToken(''); setTokenInput(''); setTokenStatus('idle'); setTokenMsg('') }}
+                >
+                  Remove token
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Action bar */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <button onClick={handleAddNew} className="admin-btn-primary">
             + Add New Card
           </button>
-          <button onClick={handleSaveAll} className="admin-btn-save">
-            {saved ? '✓ Saved!' : '💾 Save All Changes'}
+          <button
+            onClick={handleSaveAll}
+            disabled={saveStatus === 'saving'}
+            className="admin-btn-save"
+          >
+            {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'success' ? '✓ Saved!' : '💾 Save All Changes'}
           </button>
-          {saved && (
-            <span className="text-green-400 text-sm">
-              Changes saved to this browser.
+          {saveMsg && (
+            <span className={`text-sm ${saveStatus === 'success' ? 'text-green-400' : saveStatus === 'error' ? 'text-red-400' : 'text-cinema-border/60'}`}>
+              {saveMsg}
             </span>
           )}
         </div>
@@ -446,11 +546,15 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
         {/* Save button (bottom) */}
         <div className="mt-6 pt-4 border-t border-cinema-border/20">
-          <button onClick={handleSaveAll} className="admin-btn-save w-full sm:w-auto">
-            {saved ? '✓ All Changes Saved!' : '💾 Save All Changes'}
+          <button
+            onClick={handleSaveAll}
+            disabled={saveStatus === 'saving'}
+            className="admin-btn-save w-full sm:w-auto"
+          >
+            {saveStatus === 'saving' ? '⏳ Saving…' : saveStatus === 'success' ? '✓ All Changes Saved!' : '💾 Save All Changes'}
           </button>
           <p className="text-cinema-border/40 text-xs mt-2">
-            Changes are saved to this browser. Reload the main page to see updates.
+            {token ? 'Saves to GitHub → visible on all devices in ~2 minutes.' : 'Configure GitHub token above for all-device sync.'}
           </p>
         </div>
       </div>
