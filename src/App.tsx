@@ -4,13 +4,19 @@ import HeroSection from './components/HeroSection'
 import CardsGrid from './components/CardsGrid'
 import Footer from './components/Footer'
 import VolumeButton from './components/VolumeButton'
+import AdminPage from './pages/AdminPage'
 
 type AppState = 'intro' | 'main'
+
+// Show admin panel when URL path is /admin (no navigation link on site)
+const IS_ADMIN = window.location.pathname === '/admin'
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>('intro')
   const [isMuted,  setIsMuted]  = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  if (IS_ADMIN) return <AdminPage />
 
   function handleEnterMain() {
     if (!audioRef.current) {
@@ -36,9 +42,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-cinema-bg font-malayalam">
-      {/* Global volume toggle — fixed top-right */}
       <VolumeButton isMuted={isMuted} onToggle={handleToggleMute} />
-
       <HeroSection />
       <CardsGrid />
       <Footer />

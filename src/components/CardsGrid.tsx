@@ -1,89 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
+import { loadCards, extractYouTubeId, CardData } from '../data/cards'
 
-interface CardData {
-  id: number
-  title: string
-  subtitle: string
-  icon: string
-  frame: string
-  accentColor: string
-  accentRgb: string
-  videoUrl: string   // place video files in public/videos/
-}
-
-const CARDS: CardData[] = [
-  {
-    id: 1,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'അന്നം മുടക്കിയ കാലം',
-    icon: '🌾',
-    frame: '/banar_video/ffout016.gif',
-    accentColor: '#C9A227',
-    accentRgb: '201,162,39',
-    videoUrl: '/videos/card1.mp4',
-  },
-  {
-    id: 2,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'വിദ്യാഭ്യാസം തുലച്ച കാലം',
-    icon: '📚',
-    frame: '/banar_video/ffout048.gif',
-    accentColor: '#4A7FC1',
-    accentRgb: '74,127,193',
-    videoUrl: '/videos/card2.mp4',
-  },
-  {
-    id: 3,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'ആരോഗ്യം തകർത്ത കാലം',
-    icon: '🩺',
-    frame: '/banar_video/ffout080.gif',
-    accentColor: '#C0392B',
-    accentRgb: '192,57,43',
-    videoUrl: '/videos/card3.mp4',
-  },
-  {
-    id: 4,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'പെൻഷൻ തരാത്ത കാലം',
-    icon: '👴',
-    frame: '/banar_video/ffout112.gif',
-    accentColor: '#27AE60',
-    accentRgb: '39,174,96',
-    videoUrl: '/videos/card4.mp4',
-  },
-  {
-    id: 5,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'വികസനം മുടക്കിയ കാലം',
-    icon: '🏗️',
-    frame: '/banar_video/ffout144.gif',
-    accentColor: '#E67E22',
-    accentRgb: '230,126,34',
-    videoUrl: '/videos/card5.mp4',
-  },
-  {
-    id: 6,
-    title: 'തമ്മിൽ തല്ലി',
-    subtitle: 'തൊഴിലില്ലാതാക്കിയ കാലം',
-    icon: '⚒️',
-    frame: '/banar_video/ffout176.gif',
-    accentColor: '#9B59B6',
-    accentRgb: '155,89,182',
-    videoUrl: '/videos/card6.mp4',
-  },
-]
-
-// Crack SVG paths — ground fracture radiating downward from card bottom
+// Crack SVG paths
 function CrackSvg({ color, accentRgb }: { color: string; accentRgb: string }) {
   return (
-    <svg
-      className="crack-svg w-full h-full"
-      viewBox="0 0 400 55"
-      fill="none"
-      preserveAspectRatio="none"
-      style={{ color }}
-    >
+    <svg className="crack-svg w-full h-full" viewBox="0 0 400 55" fill="none" preserveAspectRatio="none" style={{ color }}>
       <path d="M200,2 L184,16 L193,14 L174,38 L186,34 L165,55" stroke={`rgba(${accentRgb},0.9)`} strokeWidth="1.8" />
       <path d="M200,2 L216,16 L207,14 L226,38 L214,34 L235,55" stroke={`rgba(${accentRgb},0.9)`} strokeWidth="1.8" />
       <path d="M184,12 L165,26 L175,24 L152,48" stroke={`rgba(${accentRgb},0.65)`} strokeWidth="1.2" />
@@ -96,10 +17,10 @@ function CrackSvg({ color, accentRgb }: { color: string; accentRgb: string }) {
   )
 }
 
-// ── Video popup modal ──────────────────────────────────────────────────────
+// ── YouTube Video Popup ────────────────────────────────────────────────────
 function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => void }) {
   const [closing, setClosing] = useState(false)
-  const [videoError, setVideoError] = useState(false)
+  const youtubeId = card ? extractYouTubeId(card.youtubeUrl) : null
 
   function close() {
     setClosing(true)
@@ -107,14 +28,11 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
   }
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') close()
-    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
-  // Lock body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -131,53 +49,51 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
         className={`modal-box${closing ? ' closing' : ''}`}
         onClick={e => e.stopPropagation()}
       >
-        {/* Cinema gold-red top bar */}
-        <div className="modal-top-bar" style={{ background: `linear-gradient(90deg, transparent, ${card.accentColor}, #C0392B, ${card.accentColor}, transparent)` }} />
+        {/* Accent top bar */}
+        <div
+          className="modal-top-bar"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${card.accentColor}, #C0392B, ${card.accentColor}, transparent)`,
+          }}
+        />
 
-        {/* Close button */}
+        {/* Close */}
         <button className="modal-close-btn" onClick={close} aria-label="Close">✕</button>
 
         {/* Header */}
         <div className="modal-header">
           <span className="text-2xl leading-none">{card.icon}</span>
           <div>
-            <p
-              className="text-[0.65rem] tracking-[0.22em] uppercase mb-0.5"
-              style={{ color: card.accentColor }}
-            >
+            <p className="text-[0.65rem] tracking-[0.22em] uppercase mb-0.5" style={{ color: card.accentColor }}>
               {card.title}
             </p>
-            <h2
-              className="font-semibold text-[#e0d5b8] leading-snug"
-              style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}
-            >
+            <h2 className="font-semibold text-[#e0d5b8] leading-snug" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
               {card.subtitle}
             </h2>
           </div>
         </div>
 
-        {/* Video */}
+        {/* Video area */}
         <div className="modal-video-wrap">
-          {videoError ? (
+          {youtubeId ? (
+            <iframe
+              key={youtubeId}
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+              title={card.subtitle}
+              style={{ border: 0 }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          ) : (
             <div className="modal-video-placeholder">
               <span className="text-4xl opacity-40">{card.icon}</span>
               <p className="text-cinema-gold/40 text-sm tracking-widest uppercase">വീഡിയോ ഉടൻ വരുന്നു</p>
               <p className="text-cinema-border/30 text-xs">Coming Soon</p>
             </div>
-          ) : (
-            <video
-              key={card.videoUrl}
-              controls
-              autoPlay
-              playsInline
-              onError={() => setVideoError(true)}
-            >
-              <source src={card.videoUrl} type="video/mp4" />
-            </video>
           )}
         </div>
 
-        {/* Bottom accent line */}
         <div
           className="h-[1px]"
           style={{ background: `linear-gradient(90deg, transparent, rgba(${card.accentRgb},0.4), transparent)` }}
@@ -191,98 +107,58 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
 interface CardProps {
   card: CardData
   index: number
-  onOpenVideo: (card: CardData) => void
+  onOpen: (card: CardData) => void
 }
 
-function Card({ card, index, onOpenVideo }: CardProps) {
+function Card({ card, index, onOpen }: CardProps) {
   const [hovered, setHovered] = useState(false)
   const [crackKey, setCrackKey] = useState(0)
   const [visible, setVisible] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  // Entrance animation via IntersectionObserver
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          obs.disconnect()
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
       { threshold: 0.1 }
     )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
 
-  function handleMouseEnter() {
-    setHovered(true)
-    setCrackKey(k => k + 1)
-  }
+  function handleMouseEnter() { setHovered(true); setCrackKey(k => k + 1) }
 
   return (
     <div
       ref={wrapRef}
       className={`relative ${visible ? 'card-in-view' : 'card-hidden'}`}
-      style={{
-        paddingBottom: '2rem',
-        animationDelay: `${index * 0.1}s`,
-      }}
+      style={{ paddingBottom: '2rem', animationDelay: `${index * 0.1}s` }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => onOpenVideo(card)}
+      onClick={() => onOpen(card)}
     >
-      {/* ── Inner card ── */}
+      {/* Inner card */}
       <div
-        className={`
-          relative overflow-hidden cursor-pointer select-none
-          border transition-all duration-300 ease-out
-          ${hovered ? 'card-active scale-[1.03]' : 'scale-100'}
-        `}
+        className={`relative overflow-hidden cursor-pointer select-none border transition-all duration-300 ease-out ${hovered ? 'card-active scale-[1.03]' : 'scale-100'}`}
         style={{
           minHeight: '200px',
           borderColor: hovered ? `rgba(${card.accentRgb},0.65)` : 'rgba(42,48,64,0.45)',
           boxShadow: hovered
             ? `0 12px 48px -8px rgba(${card.accentRgb},0.5), 0 0 0 1px rgba(${card.accentRgb},0.25)`
             : '0 2px 20px rgba(0,0,0,0.6)',
-          backgroundImage: `url(${card.frame})`,
+          backgroundImage: `url(${card.thumbnail})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* Dark overlay */}
-        <div
-          className="absolute inset-0 card-bg-overlay transition-opacity duration-300"
-          style={{ opacity: hovered ? 0.78 : 0.88 }}
-        />
-
-        {/* Accent radial glow on hover */}
-        <div
-          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-          style={{
-            opacity: hovered ? 1 : 0,
-            background: `radial-gradient(ellipse at 30% 45%, rgba(${card.accentRgb},0.2) 0%, transparent 60%)`,
-          }}
-        />
-
-        {/* Top accent bar */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none transition-all duration-300"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`,
-            opacity: hovered ? 1 : 0.4,
-            boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none',
-          }}
-        />
-
-        {/* Scanline */}
+        <div className="absolute inset-0 card-bg-overlay transition-opacity duration-300" style={{ opacity: hovered ? 0.78 : 0.88 }} />
+        <div className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ opacity: hovered ? 1 : 0, background: `radial-gradient(ellipse at 30% 45%, rgba(${card.accentRgb},0.2) 0%, transparent 60%)` }} />
+        <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none transition-all duration-300" style={{ background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`, opacity: hovered ? 1 : 0.4, boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none' }} />
         <div className="scanline-overlay opacity-25" />
 
-        {/* Card content */}
+        {/* Content */}
         <div className="relative z-10 p-5 sm:p-6 h-full flex flex-col gap-3 font-malayalam">
-          {/* Icon */}
           <div
             className="text-[2.4rem] leading-none transition-all duration-300 ease-out"
             style={{ transform: hovered ? 'scale(1.25) rotate(-10deg)' : 'scale(1) rotate(0deg)' }}
@@ -291,41 +167,28 @@ function Card({ card, index, onOpenVideo }: CardProps) {
             {card.icon}
           </div>
 
-          {/* Text */}
           <div>
-            {/* "തമ്മിൽ തല്ലി" — bold main line */}
             <h3
               className="font-malayalam font-black leading-tight text-[#f0e8cc]"
               style={{
                 fontSize: 'clamp(1.2rem, 4vw, 1.55rem)',
-                textShadow: hovered
-                  ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)`
-                  : '0 2px 8px rgba(0,0,0,0.8)',
+                textShadow: hovered ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)` : '0 2px 8px rgba(0,0,0,0.8)',
                 transition: 'text-shadow 0.3s ease',
               }}
             >
               {card.title}
             </h3>
-            {/* Subtitle — accent coloured */}
             <p
               className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
-              style={{
-                fontSize: 'clamp(1rem, 3.2vw, 1.25rem)',
-                color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)',
-              }}
+              style={{ fontSize: 'clamp(1rem, 3.2vw, 1.25rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
             >
               {card.subtitle}
             </p>
           </div>
 
-          {/* Bottom slide bar */}
           <div
             className="absolute bottom-0 left-0 h-[3px] transition-all duration-500 ease-out pointer-events-none"
-            style={{
-              width: hovered ? '100%' : '0%',
-              background: `linear-gradient(90deg, ${card.accentColor}, transparent)`,
-              boxShadow: hovered ? `0 0 8px 2px rgba(${card.accentRgb},0.5)` : 'none',
-            }}
+            style={{ width: hovered ? '100%' : '0%', background: `linear-gradient(90deg, ${card.accentColor}, transparent)`, boxShadow: hovered ? `0 0 8px 2px rgba(${card.accentRgb},0.5)` : 'none' }}
           />
         </div>
 
@@ -336,15 +199,11 @@ function Card({ card, index, onOpenVideo }: CardProps) {
         </div>
       </div>
 
-      {/* Crack effect below card */}
+      {/* Crack */}
       <div
         key={crackKey}
         className={`absolute bottom-0 left-0 right-0 h-8 pointer-events-none overflow-visible ${hovered ? 'crack-active' : ''}`}
-        style={{
-          opacity: hovered ? 1 : 0,
-          transition: hovered ? 'none' : 'opacity 0.3s ease',
-          zIndex: 30,
-        }}
+        style={{ opacity: hovered ? 1 : 0, transition: hovered ? 'none' : 'opacity 0.3s ease', zIndex: 30 }}
       >
         <CrackSvg color={card.accentColor} accentRgb={card.accentRgb} />
       </div>
@@ -354,21 +213,16 @@ function Card({ card, index, onOpenVideo }: CardProps) {
 
 // ── CardsGrid ─────────────────────────────────────────────────────────────
 export default function CardsGrid() {
+  const [cards] = useState<CardData[]>(() => loadCards())
   const [activeCard, setActiveCard] = useState<CardData | null>(null)
   const [headingVisible, setHeadingVisible] = useState(false)
   const headingRef = useRef<HTMLDivElement>(null)
 
-  // Heading entrance animation
   useEffect(() => {
     const el = headingRef.current
     if (!el) return
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHeadingVisible(true)
-          obs.disconnect()
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setHeadingVisible(true); obs.disconnect() } },
       { threshold: 0.2 }
     )
     obs.observe(el)
@@ -378,45 +232,29 @@ export default function CardsGrid() {
   return (
     <>
       <section className="relative pt-4 sm:pt-20 pb-20 px-3 sm:px-6 bg-cinema-deep font-malayalam overflow-hidden">
-        {/* Top fade — shorter on mobile to close the gap */}
         <div className="absolute top-0 left-0 right-0 h-8 sm:h-24 bg-gradient-to-b from-cinema-bg to-cinema-deep pointer-events-none z-10" />
-
         <div className="noise-overlay opacity-[0.025]" />
 
         <div className="relative z-10 w-full">
-          {/* Section heading */}
+          {/* Heading */}
           <div
             ref={headingRef}
             className={`text-center mb-6 sm:mb-12 ${headingVisible ? 'heading-in-view' : 'heading-hidden'}`}
           >
             <div className="flex items-center justify-center gap-4 mb-5">
               <div className="w-16 sm:w-28 gold-line" />
-              <div
-                className="w-2.5 h-2.5 rotate-45 bg-cinema-red"
-                style={{ boxShadow: '0 0 10px 3px rgba(139,26,26,0.6)' }}
-              />
+              <div className="w-2.5 h-2.5 rotate-45 bg-cinema-red" style={{ boxShadow: '0 0 10px 3px rgba(139,26,26,0.6)' }} />
               <div className="w-16 sm:w-28 gold-line" />
             </div>
-            <p
-              className="font-malayalam text-[clamp(1rem,2.2vw,1.3rem)] tracking-wider"
-              style={{ color: 'rgba(201,162,39,0.75)', fontWeight: 500 }}
-            >
+            <p className="font-malayalam text-[clamp(1rem,2.2vw,1.3rem)] tracking-wider" style={{ color: 'rgba(201,162,39,0.75)', fontWeight: 500 }}>
               തമ്മിൽ തല്ലി നാട് കുട്ടിച്ചോറാക്കിയ കാലം
             </p>
           </div>
 
           {/* Grid */}
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5"
-            style={{ paddingBottom: '1rem' }}
-          >
-            {CARDS.map((card, i) => (
-              <Card
-                key={card.id}
-                card={card}
-                index={i}
-                onOpenVideo={setActiveCard}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5" style={{ paddingBottom: '1rem' }}>
+            {cards.map((card, i) => (
+              <Card key={card.id} card={card} index={i} onOpen={setActiveCard} />
             ))}
           </div>
 
@@ -428,11 +266,9 @@ export default function CardsGrid() {
           </div>
         </div>
 
-        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-cinema-bg to-cinema-deep pointer-events-none z-10" />
       </section>
 
-      {/* Video popup modal */}
       {activeCard && (
         <VideoModal card={activeCard} onClose={() => setActiveCard(null)} />
       )}
