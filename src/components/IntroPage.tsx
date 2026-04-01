@@ -20,23 +20,29 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   }, [])
 
   useEffect(() => {
-    // autoPlay + muted attributes handle it natively;
-    // explicit play() call as safety net for browsers that ignore autoPlay
+    // Start muted (required for autoplay), then unmute once playing begins.
+    // Browsers block unmuted autoplay but allow JS unmute after muted playback starts.
     const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
-    video?.play().catch(() => {})
+    if (!video) return
+    video.play().catch(() => {})
+    const unmute = () => { video.muted = false }
+    video.addEventListener('playing', unmute, { once: true })
+    return () => video.removeEventListener('playing', unmute)
   }, [])
 
   function handleClick() {
-    // Start background audio synchronously within gesture context
+    // Mute video before starting mp3 to hand off audio cleanly (no dual audio)
+    if (desktopVideoRef.current) desktopVideoRef.current.muted = true
+    if (mobileVideoRef.current)  mobileVideoRef.current.muted  = true
+    // Start background mp3 synchronously within gesture context
     onAudioStart?.()
     setBtnAnim(true)
     setTimeout(() => {
-      // Pause video after tap animation so video audio plays during the delay
       desktopVideoRef.current?.pause()
       mobileVideoRef.current?.pause()
       setIsExiting(true)
       setTimeout(onEnter, 750)
-    }, 300)           // let the tap animation play first
+    }, 300)
   }
 
   // ── Desktop CTA button ───────────────────────────────────────────────────
