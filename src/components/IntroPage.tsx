@@ -19,13 +19,10 @@ export default function IntroPage({ onEnter }: Props) {
   }, [])
 
   useEffect(() => {
+    // autoPlay + muted attributes handle it natively;
+    // explicit play() call as safety net for browsers that ignore autoPlay
     const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
-    if (!video) return
-    // Muted autoplay is universally allowed; try to unmute after play starts
-    video.muted = true
-    video.play()
-      .then(() => { video.muted = false })   // unmute if browser allows
-      .catch(() => {})
+    video?.play().catch(() => {})
   }, [])
 
   function handleClick() {
@@ -87,7 +84,7 @@ export default function IntroPage({ onEnter }: Props) {
           ════════════════════════════════════════ */}
       <div className="hidden sm:block">
         <video ref={desktopVideoRef} src="/banar_video/Thallukalam.mp4"
-          loop playsInline preload="auto" aria-hidden="true"
+          loop muted playsInline autoPlay preload="auto" aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover z-0"
           style={{ objectPosition: 'center center' }}
         />
@@ -164,7 +161,7 @@ export default function IntroPage({ onEnter }: Props) {
             boxShadow: '0 0 0 1px rgba(249,115,22,0.3), 0 0 32px rgba(249,115,22,0.55), 0 0 70px rgba(249,115,22,0.18), 0 8px 32px rgba(0,0,0,0.8)',
           }}>
             <video ref={mobileVideoRef} src="/banar_video/Thallukalam.mp4"
-              loop playsInline preload="auto"
+              loop muted playsInline autoPlay preload="auto"
               className="w-full block"
               style={{ aspectRatio: '16/9', objectFit: 'cover', objectPosition: 'center' }}
             />
