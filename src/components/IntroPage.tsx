@@ -9,6 +9,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnVisible, setBtnVisible] = useState(false)
   const [isExiting,  setIsExiting]  = useState(false)
   const [btnAnim,    setBtnAnim]    = useState(false)
+  const [muted,      setMuted]      = useState(true)   // tracks whether video is muted
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef  = useRef<HTMLVideoElement>(null)
 
@@ -18,31 +19,24 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     return () => clearTimeout(t)
   }, [])
 
-  // Try unmuted play first; fall back to muted if browser blocks it.
-  // We manage play() entirely in JS (no autoPlay/muted HTML attrs on the video)
-  // so there is no browser-initiated play() racing against ours.
+  // Start video muted (guaranteed autoplay); unmute happens on first tap anywhere
   useEffect(() => {
-    const tryPlay = (video: HTMLVideoElement | null) => {
-      if (!video) return
-      video.play().catch(() => {
-        // Browser blocked unmuted autoplay → retry muted
-        video.muted = true
-        video.play().catch(() => {})
-      })
-    }
-    tryPlay(desktopVideoRef.current)
-    tryPlay(mobileVideoRef.current)
+    desktopVideoRef.current?.play().catch(() => {})
+    mobileVideoRef.current?.play().catch(() => {})
   }, [])
 
-  function handleClick() {
-    // ── Within user-gesture context: browser always allows unmute + audio.play() ──
-    // Unmute the visible video so its audio plays during the 300 ms animation
+  // First tap anywhere on the page → unmute video
+  function handlePageTap() {
+    if (!muted) return
     if (desktopVideoRef.current) desktopVideoRef.current.muted = false
     if (mobileVideoRef.current)  mobileVideoRef.current.muted  = false
-    // Start background mp3
-    onAudioStart?.()
-    setBtnAnim(true)
+    setMuted(false)
+  }
 
+  function handleClick() {
+    handlePageTap()           // unmute if not already
+    onAudioStart?.()          // start mp3 (within gesture context)
+    setBtnAnim(true)
     setTimeout(() => {
       desktopVideoRef.current?.pause()
       mobileVideoRef.current?.pause()
@@ -93,7 +87,10 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   )
 
   return (
-    <div className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ease-in-out ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+    <div
+      className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ease-in-out ${isExiting ? 'opacity-0' : 'opacity-100'}`}
+      onPointerDown={handlePageTap}
+    >
 
       {/* ════════════════════════════════════════
           DESKTOP layout (≥ 640 px)
@@ -112,6 +109,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(240,192,64,0.9) 45%, transparent 100%)', filter: 'blur(1.5px)' }} />
         <div className="absolute top-[5%] right-[18%] w-[1.5px] h-[80%] pointer-events-none animate-lightning-2 z-20"
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(192,57,43,0.85) 50%, transparent 100%)', filter: 'blur(1px)' }} />
+        {/* Tap-to-unmute badge */}
+        {muted && (
+          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.75rem', color: '#fff', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '1rem' }}>🔇</span> tap for audio
+          </div>
+        )}
+
         <div className={`absolute bottom-0 left-0 right-0 z-30 flex flex-col items-center pb-16 transition-all duration-700 ease-out ${btnVisible && !isExiting ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
           {desktopBtn}
           <p className="mt-4 text-cinema-border/50 tracking-widest" style={{ fontSize: '0.7rem' }}>
@@ -125,6 +130,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           MOBILE layout (< 640 px)
           ════════════════════════════════════════ */}
       <div className="sm:hidden flex flex-col items-center justify-center min-h-screen relative gap-6 py-8">
+
+        {/* Tap-to-unmute badge (mobile) */}
+        {muted && (
+          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.7rem', color: '#fff', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '0.9rem' }}>🔇</span> tap for audio
+          </div>
+        )}
 
         {/* Speed-lines background */}
         <div className="absolute inset-0 z-0" style={{
