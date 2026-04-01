@@ -2,16 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   onEnter: () => void
+  onAudioStart?: () => void
 }
 
 const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 640
 
-export default function IntroPage({ onEnter }: Props) {
+export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnVisible, setBtnVisible] = useState(false)
   const [isExiting,  setIsExiting]  = useState(false)
   const [btnAnim,    setBtnAnim]    = useState(false)
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef  = useRef<HTMLVideoElement>(null)
+  const unmutedRef      = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setBtnVisible(true), 1500)
@@ -25,11 +27,32 @@ export default function IntroPage({ onEnter }: Props) {
     video?.play().catch(() => {})
   }, [])
 
+  // Unmute video on first user interaction (browsers block unmuted autoplay)
+  useEffect(() => {
+    const unmute = () => {
+      if (unmutedRef.current) return
+      unmutedRef.current = true
+      const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
+      if (!video) return
+      video.muted = false
+      if (video.paused) video.play().catch(() => {})
+    }
+    document.addEventListener('click',      unmute, { once: true })
+    document.addEventListener('touchstart', unmute, { once: true })
+    return () => {
+      document.removeEventListener('click',      unmute)
+      document.removeEventListener('touchstart', unmute)
+    }
+  }, [])
+
   function handleClick() {
-    desktopVideoRef.current?.pause()
-    mobileVideoRef.current?.pause()
+    // Start background audio synchronously within gesture context
+    onAudioStart?.()
     setBtnAnim(true)
     setTimeout(() => {
+      // Pause video after tap animation so video audio plays during the delay
+      desktopVideoRef.current?.pause()
+      mobileVideoRef.current?.pause()
       setIsExiting(true)
       setTimeout(onEnter, 750)
     }, 300)           // let the tap animation play first

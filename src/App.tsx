@@ -18,23 +18,14 @@ export default function App() {
 
   // ── All hooks BEFORE any conditional return ──────────────────────────────
 
-  // Create audio once; start on first user interaction (browser autoplay policy)
+  // Create audio once; started explicitly via onAudioStart prop on IntroPage
   useEffect(() => {
     if (IS_ADMIN) return
     const audio = new Audio('/Audio/background_audio.mp3')
     audio.loop   = true
     audio.volume = 0.35
     audioRef.current = audio
-
-    // Fire once on first tap/click — the intro button click satisfies this
-    const startOnce = () => { audio.play().catch(() => {}) }
-    document.addEventListener('click',      startOnce, { once: true })
-    document.addEventListener('touchstart', startOnce, { once: true })
-    return () => {
-      document.removeEventListener('click',      startOnce)
-      document.removeEventListener('touchstart', startOnce)
-      audio.pause()
-    }
+    return () => { audio.pause() }
   }, [])
 
   // Mute background audio while a tile YouTube video plays, restore on close
@@ -54,8 +45,11 @@ export default function App() {
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   function handleEnterMain() {
-    // Audio starts via the { once: true } click listener above — no extra play() needed
     setAppState('main')
+  }
+
+  function handleAudioStart() {
+    audioRef.current?.play().catch(() => {})
   }
 
   function handleToggleMute() {
@@ -67,7 +61,7 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   if (appState === 'intro') {
-    return <IntroPage onEnter={handleEnterMain} />
+    return <IntroPage onEnter={handleEnterMain} onAudioStart={handleAudioStart} />
   }
 
   return (
