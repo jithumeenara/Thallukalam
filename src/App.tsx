@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import IntroPage from './components/IntroPage'
 import HeroSection from './components/HeroSection'
 import CardsGrid from './components/CardsGrid'
@@ -36,6 +36,22 @@ export default function App() {
     audio.muted = !audio.muted
     setIsMuted(audio.muted)
   }
+
+  // Mute background audio when a tile video is playing, restore when closed
+  useEffect(() => {
+    function handleVideoPlaying(e: Event) {
+      const audio = audioRef.current
+      if (!audio) return
+      const playing = (e as CustomEvent<boolean>).detail
+      if (playing) {
+        audio.volume = 0
+      } else {
+        audio.volume = 0.35
+      }
+    }
+    window.addEventListener('thallikalam:videoplaying', handleVideoPlaying)
+    return () => window.removeEventListener('thallikalam:videoplaying', handleVideoPlaying)
+  }, [])
 
   if (appState === 'intro') {
     return <IntroPage onEnter={handleEnterMain} />

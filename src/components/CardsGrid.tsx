@@ -35,7 +35,12 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
+    // Mute background audio while video is open
+    window.dispatchEvent(new CustomEvent('thallikalam:videoplaying', { detail: true }))
+    return () => {
+      document.body.style.overflow = ''
+      window.dispatchEvent(new CustomEvent('thallikalam:videoplaying', { detail: false }))
+    }
   }, [])
 
   if (!card) return null
