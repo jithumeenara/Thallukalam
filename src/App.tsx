@@ -9,7 +9,6 @@ import AdminPage from './pages/AdminPage'
 
 type AppState = 'intro' | 'main'
 
-// Show admin panel when URL path is /admin (no navigation link on site)
 const IS_ADMIN = window.location.pathname === '/admin'
 
 export default function App() {
@@ -17,30 +16,45 @@ export default function App() {
   const [isMuted,  setIsMuted]  = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  if (IS_ADMIN) return <AdminPage />
+  // ── All hooks BEFORE any conditional return ──────────────────────────────
 
-  // Create audio on mount and start on first user interaction
+  // Create audio once; start on first user interaction (browser autoplay policy)
   useEffect(() => {
+    if (IS_ADMIN) return
     const audio = new Audio('/Audio/background_audio.mp3')
     audio.loop   = true
     audio.volume = 0.35
     audioRef.current = audio
 
-    const tryPlay = () => audio.play().catch(() => {})
-    // Try immediately (allowed in some browsers / when user navigated)
-    tryPlay()
-    // Fallback: resume on first touch/click anywhere on the page
-    document.addEventListener('click',      tryPlay, { once: true })
-    document.addEventListener('touchstart', tryPlay, { once: true })
+    // Fire once on first tap/click — the intro button click satisfies this
+    const startOnce = () => { audio.play().catch(() => {}) }
+    document.addEventListener('click',      startOnce, { once: true })
+    document.addEventListener('touchstart', startOnce, { once: true })
     return () => {
-      document.removeEventListener('click',      tryPlay)
-      document.removeEventListener('touchstart', tryPlay)
+      document.removeEventListener('click',      startOnce)
+      document.removeEventListener('touchstart', startOnce)
+      audio.pause()
     }
   }, [])
 
+  // Mute background audio while a tile YouTube video plays, restore on close
+  useEffect(() => {
+    if (IS_ADMIN) return
+    function handleVideoPlaying(e: Event) {
+      const audio = audioRef.current
+      if (!audio) return
+      audio.volume = (e as CustomEvent<boolean>).detail ? 0 : 0.35
+    }
+    window.addEventListener('thallikalam:videoplaying', handleVideoPlaying)
+    return () => window.removeEventListener('thallikalam:videoplaying', handleVideoPlaying)
+  }, [])
+
+  // ── Admin route ──────────────────────────────────────────────────────────
+  if (IS_ADMIN) return <AdminPage />
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
   function handleEnterMain() {
-    // Audio already initialised — ensure it's playing when entering main
-    audioRef.current?.play().catch(() => {})
+    // Audio starts via the { once: true } click listener above — no extra play() needed
     setAppState('main')
   }
 
@@ -51,22 +65,7 @@ export default function App() {
     setIsMuted(audio.muted)
   }
 
-  // Mute background audio when a tile video is playing, restore when closed
-  useEffect(() => {
-    function handleVideoPlaying(e: Event) {
-      const audio = audioRef.current
-      if (!audio) return
-      const playing = (e as CustomEvent<boolean>).detail
-      if (playing) {
-        audio.volume = 0
-      } else {
-        audio.volume = 0.35
-      }
-    }
-    window.addEventListener('thallikalam:videoplaying', handleVideoPlaying)
-    return () => window.removeEventListener('thallikalam:videoplaying', handleVideoPlaying)
-  }, [])
-
+  // ── Render ────────────────────────────────────────────────────────────────
   if (appState === 'intro') {
     return <IntroPage onEnter={handleEnterMain} />
   }

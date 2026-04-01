@@ -29,7 +29,7 @@ function MarqueeRow({ direction, paused }: { direction: 'left' | 'right'; paused
       <div
         className="flex items-center whitespace-nowrap gap-1"
         style={{
-          animation: `marquee-${direction} 50s linear infinite`,
+          animation: `marquee-${direction} 32s linear infinite`,
           animationPlayState: paused ? 'paused' : 'running',
           willChange: 'transform',
         }}
