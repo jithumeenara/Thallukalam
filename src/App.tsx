@@ -18,13 +18,22 @@ export default function App() {
 
   // ── All hooks BEFORE any conditional return ──────────────────────────────
 
-  // Create audio once; started explicitly via onAudioStart prop on IntroPage
+  // Create audio and try to autoplay immediately; fall back to first interaction
   useEffect(() => {
     if (IS_ADMIN) return
     const audio = new Audio('/Audio/background_audio.mp3')
     audio.loop   = true
     audio.volume = 0.35
     audioRef.current = audio
+
+    // Try immediate autoplay (works on revisits / high media-engagement browsers)
+    audio.play().catch(() => {
+      // Blocked by browser — start on any first user gesture
+      const startOnce = () => { audio.play().catch(() => {}) }
+      document.addEventListener('click',      startOnce, { once: true })
+      document.addEventListener('touchstart', startOnce, { once: true })
+    })
+
     return () => { audio.pause() }
   }, [])
 
