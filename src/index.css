@@ -222,6 +222,17 @@ html, body, #root {
   opacity: 0.5;
 }
 
+/* ─── Mobile button tap animation ─── */
+@keyframes btn-tap {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  30%  { transform: scale(0.87); filter: brightness(1.4); }
+  65%  { transform: scale(1.06); filter: brightness(1.1); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+.btn-tap-anim {
+  animation: btn-tap 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
 /* ─── Intro background radial ─── */
 .intro-bg {
   background: radial-gradient(
