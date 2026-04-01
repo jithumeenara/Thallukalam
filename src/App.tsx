@@ -19,14 +19,28 @@ export default function App() {
 
   if (IS_ADMIN) return <AdminPage />
 
-  function handleEnterMain() {
-    if (!audioRef.current) {
-      const audio = new Audio('/Audio/background_audio.mp3')
-      audio.loop   = true
-      audio.volume = 0.35
-      audio.play().catch(() => {})
-      audioRef.current = audio
+  // Create audio on mount and start on first user interaction
+  useEffect(() => {
+    const audio = new Audio('/Audio/background_audio.mp3')
+    audio.loop   = true
+    audio.volume = 0.35
+    audioRef.current = audio
+
+    const tryPlay = () => audio.play().catch(() => {})
+    // Try immediately (allowed in some browsers / when user navigated)
+    tryPlay()
+    // Fallback: resume on first touch/click anywhere on the page
+    document.addEventListener('click',      tryPlay, { once: true })
+    document.addEventListener('touchstart', tryPlay, { once: true })
+    return () => {
+      document.removeEventListener('click',      tryPlay)
+      document.removeEventListener('touchstart', tryPlay)
     }
+  }, [])
+
+  function handleEnterMain() {
+    // Audio already initialised — ensure it's playing when entering main
+    audioRef.current?.play().catch(() => {})
     setAppState('main')
   }
 
