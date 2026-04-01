@@ -15,7 +15,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [showLottie, setShowLottie] = useState(false)
   const [lottieData, setLottieData] = useState<object | null>(null)
 
-  const [videoUnmuted, setVideoUnmuted] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // ── Boot ──────────────────────────────────────────────────────────────────
@@ -31,7 +30,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   }, [])
 
   // Start video muted — guaranteed autoplay on every browser.
-  // Audio is enabled only inside handleClick (user gesture context).
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -39,18 +37,19 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     video.play().catch(() => {})
   }, [])
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
-  // First tap anywhere → unmute the video (browser allows inside gesture context)
-  function handleFirstTap() {
-    if (videoUnmuted) return
+  // Unlock video audio on first native pointer gesture (native listener = trusted context)
+  useEffect(() => {
     const video = videoRef.current
-    if (video) {
-      video.muted = false
-      if (video.paused) video.play().catch(() => {})
+    if (!video) return
+    function unlock() {
+      video!.muted = false
+      if (video!.paused) video!.play().catch(() => {})
     }
-    setVideoUnmuted(true)
-  }
+    document.addEventListener('pointerdown', unlock, { once: true })
+    return () => document.removeEventListener('pointerdown', unlock)
+  }, [])
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleClick() {
     const video = videoRef.current
@@ -103,7 +102,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div onPointerDown={handleFirstTap} className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+    <div className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
 
       {/* ══════════════════════════════════════════════
           Single <video> — one ref, works for all sizes
