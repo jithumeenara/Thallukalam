@@ -11,13 +11,13 @@
   },
   {
     "id": 2,
-    "title": "തമ്മിൽ തല്ലി",
-    "subtitle": "വിദ്യാഭ്യാസം തുലച്ച കാലം",
+    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "subtitle": "പാഠപുസ്തകം മുടങ്ങും",
     "icon": "📚",
-    "thumbnail": "/banar_video/ffout048.gif",
+    "thumbnail": "https://img.youtube.com/vi/jBtJy1_-b9g/maxresdefault.jpg",
     "accentColor": "#4A7FC1",
     "accentRgb": "74,127,193",
-    "youtubeUrl": ""
+    "youtubeUrl": "https://youtu.be/jBtJy1_-b9g"
   },
   {
     "id": 3,
