@@ -69,46 +69,32 @@ export default function Footer() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
 
-        {/* ── Row: [spacer] Logo (center) Social Icons (right) ── */}
-        <div className="flex items-center mb-6 w-full">
-
-          {/* Left spacer — matches social icons width so logo stays centered */}
+        {/* ── Desktop: [spacer] Logo (center) Social Icons (right) ── */}
+        <div className="hidden sm:flex items-center mb-6 w-full">
           <div className="flex-1" />
-
-          {/* Logo — centered */}
           <div className="opacity-75 hover:opacity-100 transition-opacity duration-500 flex-shrink-0"
             style={{ width: 'min(200px, 44vw)', filter: 'drop-shadow(0 0 24px rgba(201,162,39,0.28))' }}
           >
             <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto block" draggable={false} />
           </div>
-
-          {/* Social Icons — right */}
           <div className="flex-1 flex items-center justify-end gap-3">
             {activeSocial.map(l => (
-              <a
-                key={l.key}
-                href={l.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={l.label}
+              <a key={l.key} href={l.url} target="_blank" rel="noopener noreferrer" aria-label={l.label}
                 className="flex items-center justify-center w-10 h-10 rounded-full border border-cinema-border/30 transition-all duration-300 hover:scale-110"
                 style={{ color: 'rgba(201,162,39,0.55)' }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.color = l.color
-                  el.style.background = l.hover
-                  el.style.borderColor = l.color
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.color = 'rgba(201,162,39,0.55)'
-                  el.style.background = ''
-                  el.style.borderColor = 'rgba(42,48,64,0.3)'
-                }}
-              >
-                {l.icon}
-              </a>
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = l.color; el.style.background = l.hover; el.style.borderColor = l.color }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(201,162,39,0.55)'; el.style.background = ''; el.style.borderColor = 'rgba(42,48,64,0.3)' }}
+              >{l.icon}</a>
             ))}
+          </div>
+        </div>
+
+        {/* ── Mobile: Logo only, centered ── */}
+        <div className="sm:hidden flex justify-center mb-6">
+          <div className="opacity-75 hover:opacity-100 transition-opacity duration-500"
+            style={{ width: 'min(200px, 52vw)', filter: 'drop-shadow(0 0 24px rgba(201,162,39,0.28))' }}
+          >
+            <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto block" draggable={false} />
           </div>
         </div>
 
@@ -132,6 +118,20 @@ export default function Footer() {
         >
           Site owned by CPI(M) Thiruvananthapuram District Committee
         </p>
+
+        {/* Mobile: social icons below ownership text */}
+        {activeSocial.length > 0 && (
+          <div className="sm:hidden flex items-center justify-center gap-4 mt-5">
+            {activeSocial.map(l => (
+              <a key={l.key} href={l.url} target="_blank" rel="noopener noreferrer" aria-label={l.label}
+                className="flex items-center justify-center w-11 h-11 rounded-full border border-cinema-border/30 transition-all duration-300 hover:scale-110"
+                style={{ color: 'rgba(201,162,39,0.55)' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = l.color; el.style.background = l.hover; el.style.borderColor = l.color }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(201,162,39,0.55)'; el.style.background = ''; el.style.borderColor = 'rgba(42,48,64,0.3)' }}
+              >{l.icon}</a>
+            ))}
+          </div>
+        )}
 
       </div>
     </footer>
