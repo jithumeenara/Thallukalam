@@ -29,8 +29,8 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     fetch('/lottie/click.json').then(r => r.json()).then(setLottieData).catch(() => {})
   }, [])
 
-  // Try to autoplay with audio; browsers that allow it (desktop / return visitors) succeed.
-  // On block, fall back to muted so the video still plays visually.
+  // Try autoplay with audio (works on desktop / return visitors).
+  // On block, fall back to muted so video still plays visually.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -41,19 +41,30 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     })
   }, [])
 
+  // Silent fallback for mobile first-visit: unlock audio on the very first click
+  // (capture fires before any React handler, transparent to user — no UI required).
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    function unlock() {
+      if (!video!.muted) return   // already unmuted by auto-unmute above
+      video!.muted = false
+      if (video!.paused) video!.play().catch(() => {})
+    }
+    document.addEventListener('click', unlock, { once: true, capture: true })
+    return () => document.removeEventListener('click', unlock, { capture: true })
+  }, [])
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleClick() {
     const video = videoRef.current
-    // Set volume to 0 (no permission needed) so video doesn't overlap the mp3.
-    // video.muted=true would re-trigger the autoplay policy; volume=0 is safe.
-    if (video) video.volume = 0
-    onAudioStart?.()   // start background mp3 within gesture
+    onAudioStart?.()   // start background mp3 within gesture context
     setBtnAnim(true)
     setShowLottie(true)
 
     setTimeout(() => {
-      if (video) video.pause()
+      if (video) video.pause()   // video audio stops naturally; mp3 continues
       setIsExiting(true)
       setTimeout(onEnter, 700)
     }, 320)
