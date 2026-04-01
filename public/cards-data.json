@@ -1,7 +1,8 @@
 [
   {
     "id": 4,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "പെൻഷൻ മുടങ്ങും",
     "icon": "👴",
     "thumbnail": "https://img.youtube.com/vi/tZSfW35Qn9k/maxresdefault.jpg",
@@ -11,7 +12,8 @@
   },
   {
     "id": 1,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "റേഷൻ മുടങ്ങും",
     "icon": "🌾",
     "thumbnail": "https://img.youtube.com/vi/HX4aykXGl2o/maxresdefault.jpg",
@@ -21,7 +23,8 @@
   },
   {
     "id": 2,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "പാഠപുസ്തകം മുടങ്ങും",
     "icon": "📚",
     "thumbnail": "https://img.youtube.com/vi/jBtJy1_-b9g/maxresdefault.jpg",
@@ -31,7 +34,8 @@
   },
   {
     "id": 3,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "ആരോഗ്യം തകരും",
     "icon": "🩺",
     "thumbnail": "https://img.youtube.com/vi/Y1c8sV-91RU/maxresdefault.jpg",
@@ -41,7 +45,8 @@
   },
   {
     "id": 5,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "വികസനം മുടക്കിയ കാലം",
     "icon": "🏗️",
     "thumbnail": "https://img.youtube.com/vi/irZPKzcsHBA/maxresdefault.jpg",
@@ -51,7 +56,8 @@
   },
   {
     "id": 6,
-    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "title": "തമ്മിൽ തല്ലുകാർ",
+    "title2": "വന്നാൽ",
     "subtitle": "വ്യവസായം മുടങ്ങും",
     "icon": "⚒️",
     "thumbnail": "https://img.youtube.com/vi/90vHe07Uc0Y/maxresdefault.jpg",

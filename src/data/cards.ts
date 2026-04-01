@@ -1,6 +1,7 @@
 export interface CardData {
   id: number
   title: string
+  title2: string
   subtitle: string
   icon: string
   thumbnail: string
@@ -10,12 +11,12 @@ export interface CardData {
 }
 
 export const DEFAULT_CARDS: CardData[] = [
-  { id: 1, title: 'തമ്മിൽ തല്ലി', subtitle: 'അന്നം മുടക്കിയ കാലം',        icon: '🌾',  thumbnail: '/banar_video/ffout016.gif', accentColor: '#C9A227', accentRgb: '201,162,39', youtubeUrl: '' },
-  { id: 2, title: 'തമ്മിൽ തല്ലി', subtitle: 'വിദ്യാഭ്യാസം തുലച്ച കാലം', icon: '📚',  thumbnail: '/banar_video/ffout048.gif', accentColor: '#4A7FC1', accentRgb: '74,127,193',  youtubeUrl: '' },
-  { id: 3, title: 'തമ്മിൽ തല്ലി', subtitle: 'ആരോഗ്യം തകർത്ത കാലം',      icon: '🩺',  thumbnail: '/banar_video/ffout080.gif', accentColor: '#C0392B', accentRgb: '192,57,43',   youtubeUrl: '' },
-  { id: 4, title: 'തമ്മിൽ തല്ലി', subtitle: 'പെൻഷൻ തരാത്ത കാലം',         icon: '👴',  thumbnail: '/banar_video/ffout112.gif', accentColor: '#27AE60', accentRgb: '39,174,96',   youtubeUrl: '' },
-  { id: 5, title: 'തമ്മിൽ തല്ലി', subtitle: 'വികസനം മുടക്കിയ കാലം',       icon: '🏗️', thumbnail: '/banar_video/ffout144.gif', accentColor: '#E67E22', accentRgb: '230,126,34',  youtubeUrl: '' },
-  { id: 6, title: 'തമ്മിൽ തല്ലി', subtitle: 'തൊഴിലില്ലാതാക്കിയ കാലം',    icon: '⚒️', thumbnail: '/banar_video/ffout176.gif', accentColor: '#9B59B6', accentRgb: '155,89,182',  youtubeUrl: '' },
+  { id: 1, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'അന്നം മുടക്കിയ കാലം',        icon: '🌾',  thumbnail: '/banar_video/ffout016.gif', accentColor: '#C9A227', accentRgb: '201,162,39', youtubeUrl: '' },
+  { id: 2, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'വിദ്യാഭ്യാസം തുലച്ച കാലം', icon: '📚',  thumbnail: '/banar_video/ffout048.gif', accentColor: '#4A7FC1', accentRgb: '74,127,193',  youtubeUrl: '' },
+  { id: 3, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'ആരോഗ്യം തകർത്ത കാലം',      icon: '🩺',  thumbnail: '/banar_video/ffout080.gif', accentColor: '#C0392B', accentRgb: '192,57,43',   youtubeUrl: '' },
+  { id: 4, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'പെൻഷൻ തരാത്ത കാലം',         icon: '👴',  thumbnail: '/banar_video/ffout112.gif', accentColor: '#27AE60', accentRgb: '39,174,96',   youtubeUrl: '' },
+  { id: 5, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'വികസനം മുടക്കിയ കാലം',       icon: '🏗️', thumbnail: '/banar_video/ffout144.gif', accentColor: '#E67E22', accentRgb: '230,126,34',  youtubeUrl: '' },
+  { id: 6, title: 'തമ്മിൽ തല്ലി', title2: 'തല്ലുകാർ വന്നാൽ', subtitle: 'തൊഴിലില്ലാതാക്കിയ കാലം',    icon: '⚒️', thumbnail: '/banar_video/ffout176.gif', accentColor: '#9B59B6', accentRgb: '155,89,182',  youtubeUrl: '' },
 ]
 
 // ── localStorage (local cache) ─────────────────────────────────────────────

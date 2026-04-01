@@ -176,16 +176,24 @@ function Card({ card, index, onOpen }: CardProps) {
           <h3
             className="font-malayalam font-black leading-tight text-[#f0e8cc]"
             style={{
-              fontSize: 'clamp(1.2rem, 4vw, 1.55rem)',
+              fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
               textShadow: hovered ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)` : '0 2px 8px rgba(0,0,0,0.8)',
               transition: 'text-shadow 0.3s ease',
             }}
           >
             {card.title}
           </h3>
+          {card.title2 && (
+            <p
+              className="font-malayalam font-bold leading-snug mt-0.5 text-[#e8dbb0]"
+              style={{ fontSize: 'clamp(0.95rem, 3vw, 1.2rem)', textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+            >
+              {card.title2}
+            </p>
+          )}
           <p
             className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
-            style={{ fontSize: 'clamp(1rem, 3.2vw, 1.25rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
+            style={{ fontSize: 'clamp(0.85rem, 2.6vw, 1.05rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
           >
             {card.subtitle}
           </p>

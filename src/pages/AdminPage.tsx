@@ -20,6 +20,7 @@ function emptyCard(id: number): CardData {
   return {
     id,
     title: 'തമ്മിൽ തല്ലി',
+    title2: '',
     subtitle: '',
     icon: '🎬',
     thumbnail: THUMBNAIL_OPTIONS[0],
@@ -182,6 +183,16 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
             onChange={e => set('title', e.target.value)}
             className="admin-input mb-4"
             placeholder="തമ്മിൽ തല്ലി"
+          />
+
+          {/* Secondary Title */}
+          <label className="admin-label">Secondary Title</label>
+          <input
+            type="text"
+            value={draft.title2}
+            onChange={e => set('title2', e.target.value)}
+            className="admin-input mb-4"
+            placeholder="e.g. തല്ലുകാർ വന്നാൽ"
           />
 
           {/* Subtitle */}
@@ -627,6 +638,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   <p className="text-[#f0e8cc] font-black text-sm leading-tight truncate">
                     {card.title}
                   </p>
+                  {card.title2 && (
+                    <p className="text-[#e8dbb0]/80 text-xs truncate">{card.title2}</p>
+                  )}
                   <p className="text-cinema-gold/80 text-xs truncate">{card.subtitle || '—'}</p>
                   <p className={`text-xs mt-0.5 ${ytId(card.youtubeUrl) ? 'text-green-400' : 'text-cinema-border/50'}`}>
                     {ytId(card.youtubeUrl) ? '▶ YouTube linked' : 'No video'}
