@@ -157,16 +157,18 @@ function Card({ card, index, onOpen }: CardProps) {
         <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none transition-all duration-300" style={{ background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`, opacity: hovered ? 1 : 0.4, boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none' }} />
         <div className="scanline-overlay opacity-25" />
 
-        {/* Content */}
-        <div className="relative z-10 p-5 sm:p-6 h-full flex flex-col gap-3 font-malayalam">
+        {/* Content — icon top-left, text bottom-left */}
+        <div className="relative z-10 p-5 sm:p-6 h-full flex flex-col justify-between font-malayalam">
+          {/* Icon — top left */}
           <div
-            className="text-[2.4rem] leading-none transition-all duration-300 ease-out"
+            className="text-[2.4rem] leading-none transition-all duration-300 ease-out self-start"
             style={{ transform: hovered ? 'scale(1.25) rotate(-10deg)' : 'scale(1) rotate(0deg)' }}
             aria-hidden="true"
           >
             {card.icon}
           </div>
 
+          {/* Text — bottom left */}
           <div>
             <h3
               className="font-malayalam font-black leading-tight text-[#f0e8cc]"

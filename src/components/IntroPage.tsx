@@ -1,30 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   onEnter: () => void
 }
 
-// Deterministic particles — no randomness, stable render
-const PARTICLES = Array.from({ length: 28 }, (_, i) => ({
-  id: i,
-  left: `${(i * 37 + 11) % 100}%`,
-  top: `${(i * 53 + 7) % 100}%`,
-  size: `${2 + (i % 4)}px`,
-  delay: `${(i * 0.28) % 3.5}s`,
-  duration: `${2.8 + (i % 4) * 0.7}s`,
-  opacity: (0.25 + (i % 6) * 0.1).toFixed(2),
-  color: i % 3 === 0 ? '#C9A227' : i % 3 === 1 ? '#8B1A1A' : '#d4c5a0',
-}))
-
 export default function IntroPage({ onEnter }: Props) {
-  const [logoVisible, setLogoVisible] = useState(false)
-  const [btnVisible, setBtnVisible] = useState(false)
-  const [isExiting, setIsExiting] = useState(false)
+  const [btnVisible, setBtnVisible]   = useState(false)
+  const [isExiting, setIsExiting]     = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setLogoVisible(true), 350)
-    const t2 = setTimeout(() => setBtnVisible(true), 2400)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    const t = setTimeout(() => setBtnVisible(true), 1800)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    videoRef.current?.play().catch(() => {})
   }, [])
 
   function handleClick() {
@@ -36,23 +27,38 @@ export default function IntroPage({ onEnter }: Props) {
     <div
       className={`
         relative min-h-screen w-full flex flex-col items-center justify-center
-        overflow-hidden font-malayalam intro-bg
+        overflow-hidden font-malayalam
         transition-opacity duration-700 ease-in-out
         ${isExiting ? 'opacity-0' : 'opacity-100'}
       `}
     >
+      {/* ── Background video ── */}
+      <video
+        ref={videoRef}
+        src="/banar_video/Thallukalam.mp4"
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        aria-hidden="true"
+      />
+
+      {/* Dark overlay so button is readable */}
+      <div className="absolute inset-0 z-10 bg-black/45 pointer-events-none" />
+
       {/* Noise texture */}
-      <div className="noise-overlay animate-flicker" />
+      <div className="noise-overlay animate-flicker z-10" />
 
       {/* Scanline */}
-      <div className="scanline-overlay" />
+      <div className="scanline-overlay z-10" />
 
       {/* Vignette */}
-      <div className="vignette" />
+      <div className="vignette z-10" />
 
       {/* Lightning bolt — left */}
       <div
-        className="absolute top-0 left-[14%] w-[2px] h-full pointer-events-none animate-lightning z-10"
+        className="absolute top-0 left-[14%] w-[2px] h-full pointer-events-none animate-lightning z-20"
         style={{
           background: 'linear-gradient(180deg, transparent 0%, rgba(240,192,64,0.9) 45%, transparent 100%)',
           filter: 'blur(1.5px)',
@@ -61,79 +67,17 @@ export default function IntroPage({ onEnter }: Props) {
 
       {/* Lightning bolt — right */}
       <div
-        className="absolute top-[5%] right-[18%] w-[1.5px] h-[80%] pointer-events-none animate-lightning-2 z-10"
+        className="absolute top-[5%] right-[18%] w-[1.5px] h-[80%] pointer-events-none animate-lightning-2 z-20"
         style={{
           background: 'linear-gradient(180deg, transparent 0%, rgba(192,57,43,0.85) 50%, transparent 100%)',
           filter: 'blur(1px)',
         }}
       />
 
-      {/* Ambient bottom glow */}
-      <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-48 pointer-events-none z-0"
-        style={{
-          background: 'radial-gradient(ellipse at bottom, rgba(139,26,26,0.2) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Particles */}
-      {PARTICLES.map((p) => (
-        <div
-          key={p.id}
-          className="particle animate-dust-float"
-          style={{
-            left: p.left,
-            top: p.top,
-            width: p.size,
-            height: p.size,
-            background: p.color,
-            opacity: p.opacity,
-            animationDelay: p.delay,
-            animationDuration: p.duration,
-            zIndex: 2,
-          }}
-        />
-      ))}
-
-      {/* ── Logo container ── */}
-      <div
-        className={`
-          relative z-20 mb-12 w-[min(440px,82vw)]
-          transition-all duration-[1800ms] ease-out
-          ${logoVisible ? 'opacity-100 animate-logo-enter' : 'opacity-0 scale-[0.3] blur-[20px]'}
-        `}
-      >
-        {/* Glow behind logo */}
-        <div
-          className={`absolute inset-[-25%] rounded-full pointer-events-none transition-opacity duration-1000 ${logoVisible ? 'opacity-100 animate-glow-pulse' : 'opacity-0'}`}
-          style={{
-            background: 'radial-gradient(ellipse, rgba(201,162,39,0.2) 0%, rgba(139,26,26,0.08) 50%, transparent 70%)',
-          }}
-        />
-
-        {/* Gold ring */}
-        <div
-          className={`absolute inset-[-10%] rounded-full border border-cinema-gold/10 pointer-events-none transition-opacity duration-1500 ${logoVisible ? 'opacity-100' : 'opacity-0'}`}
-          style={{ boxShadow: 'inset 0 0 30px rgba(201,162,39,0.08)' }}
-        />
-
-        <img
-          src="/logo.svg"
-          alt="തല്ലുകാലം"
-          className="relative w-full h-auto"
-          draggable={false}
-          style={{
-            animation: logoVisible
-              ? 'logo-float 3.2s ease-in-out 1.8s infinite'
-              : 'none',
-          }}
-        />
-      </div>
-
       {/* ── CTA Button ── */}
       <div
         className={`
-          relative z-20
+          relative z-30
           transition-all duration-700 ease-out
           ${btnVisible && !isExiting
             ? 'opacity-100 translate-y-0 pointer-events-auto'
@@ -190,7 +134,7 @@ export default function IntroPage({ onEnter }: Props) {
       </div>
 
       {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-cinema-deep to-transparent pointer-events-none z-10" />
+      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-cinema-deep to-transparent pointer-events-none z-20" />
     </div>
   )
 }
