@@ -15,6 +15,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [showLottie, setShowLottie] = useState(false)
   const [lottieData, setLottieData] = useState<object | null>(null)
 
+  const [videoUnmuted, setVideoUnmuted] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // ── Boot ──────────────────────────────────────────────────────────────────
@@ -40,10 +41,21 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
+  // First tap anywhere → unmute the video (browser allows inside gesture context)
+  function handleFirstTap() {
+    if (videoUnmuted) return
+    const video = videoRef.current
+    if (video) {
+      video.muted = false
+      if (video.paused) video.play().catch(() => {})
+    }
+    setVideoUnmuted(true)
+  }
+
   function handleClick() {
     const video = videoRef.current
-    // Unmute & pause within user-gesture context (browser always allows this)
-    if (video) video.muted = false
+    // Mute video so it doesn't overlap with the background mp3
+    if (video) video.muted = true
     onAudioStart?.()   // start background mp3 within gesture
     setBtnAnim(true)
     setShowLottie(true)
@@ -91,7 +103,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
+    <div onPointerDown={handleFirstTap} className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
 
       {/* ══════════════════════════════════════════════
           Single <video> — one ref, works for all sizes
