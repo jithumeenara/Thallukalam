@@ -69,14 +69,14 @@ export default function Footer() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
 
-        {/* ── Row: Logo (left) + Social Icons (right) ── */}
-        <div className="flex items-center justify-between gap-4 mb-6">
+        {/* ── Row: Logo (center-left) + Social Icons (right) ── */}
+        <div className="flex items-center justify-between gap-4 mb-6 w-full">
 
           {/* Logo */}
-          <div className="w-[min(200px,44vw)] opacity-75 hover:opacity-100 transition-opacity duration-500 flex-shrink-0"
-            style={{ filter: 'drop-shadow(0 0 24px rgba(201,162,39,0.28))' }}
+          <div className="opacity-75 hover:opacity-100 transition-opacity duration-500 flex-shrink-0"
+            style={{ width: 'min(200px, 44vw)', filter: 'drop-shadow(0 0 24px rgba(201,162,39,0.28))' }}
           >
-            <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto" draggable={false} />
+            <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto block" draggable={false} />
           </div>
 
           {/* Social Icons */}
@@ -126,8 +126,8 @@ export default function Footer() {
         </p>
 
         {/* Ownership text */}
-        <p className="text-center text-cinema-border/45 text-xs tracking-wide"
-          style={{ fontSize: '0.72rem' }}
+        <p className="text-center text-xs tracking-wide"
+          style={{ fontSize: '0.72rem', color: '#8c6060' }}
         >
           Site owned by CPI(M) Thiruvananthapuram District Committee
         </p>
