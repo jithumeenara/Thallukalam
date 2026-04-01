@@ -8,7 +8,7 @@ interface BannerItem {
 
 const CONTENT_ITEMS: BannerItem[] = [
   { text: 'ആരോഗ്യം തകരും',        bg: '#FFD700', textColor: '#0B0F14' },
-  { text: 'പാഠപുസ്തകം മുടങ്ങും',  bg: '#D2691E', textColor: '#FFFFFF' },
+  { text: 'പാഠപുസ്തകം മുടങ്ങും',  bg: '#5e17a0', textColor: '#FFFFFF' },
   { text: 'വ്യവസായം മുടങ്ങും',    bg: '#ADADAD', textColor: '#8B0000' },
   { text: 'വികസനം മുടങ്ങും',       bg: '#C0392B', textColor: '#FFE08A' },
   { text: 'റേഷൻ മുടങ്ങും',         bg: '#4A7FC1', textColor: '#FFFFFF' },
