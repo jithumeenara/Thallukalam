@@ -5,8 +5,6 @@ interface Props {
   onAudioStart?: () => void
 }
 
-const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 640
-
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnVisible, setBtnVisible] = useState(false)
   const [isExiting,  setIsExiting]  = useState(false)
@@ -14,29 +12,27 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef  = useRef<HTMLVideoElement>(null)
 
+  // Show button after 1.5 s
   useEffect(() => {
     const t = setTimeout(() => setBtnVisible(true), 1500)
     return () => clearTimeout(t)
   }, [])
 
+  // Kick off muted autoplay (100 % reliable across all browsers)
   useEffect(() => {
-    const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
-    if (!video) return
-    // Try playing with audio; if browser blocks it fall back to muted autoplay
-    video.muted = false
-    video.play().catch(() => {
-      video.muted = true
-      video.play().catch(() => {})
-    })
+    desktopVideoRef.current?.play().catch(() => {})
+    mobileVideoRef.current?.play().catch(() => {})
   }, [])
 
   function handleClick() {
-    // Mute video before starting mp3 to hand off audio cleanly (no dual audio)
-    if (desktopVideoRef.current) desktopVideoRef.current.muted = true
-    if (mobileVideoRef.current)  mobileVideoRef.current.muted  = true
-    // Start background mp3 synchronously within gesture context
+    // ── Within user-gesture context: browser always allows unmute + audio.play() ──
+    // Unmute the visible video so its audio plays during the 300 ms animation
+    if (desktopVideoRef.current) desktopVideoRef.current.muted = false
+    if (mobileVideoRef.current)  mobileVideoRef.current.muted  = false
+    // Start background mp3
     onAudioStart?.()
     setBtnAnim(true)
+
     setTimeout(() => {
       desktopVideoRef.current?.pause()
       mobileVideoRef.current?.pause()
@@ -90,7 +86,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     <div className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ease-in-out ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
 
       {/* ════════════════════════════════════════
-          DESKTOP layout (≥ 640 px) — unchanged
+          DESKTOP layout (≥ 640 px)
           ════════════════════════════════════════ */}
       <div className="hidden sm:block">
         <video ref={desktopVideoRef} src="/banar_video/Thallukalam.mp4"
@@ -116,7 +112,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
       </div>
 
       {/* ════════════════════════════════════════
-          MOBILE layout (< 640 px) — vertically centered
+          MOBILE layout (< 640 px)
           ════════════════════════════════════════ */}
       <div className="sm:hidden flex flex-col items-center justify-center min-h-screen relative gap-6 py-8">
 
@@ -150,7 +146,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
               filter: 'drop-shadow(0 0 22px rgba(201,162,39,0.75)) drop-shadow(0 2px 10px rgba(192,57,43,0.5))',
             }}
           />
-          {/* small lightning accents */}
           <div className="flex gap-3 mt-1 opacity-80">
             <span style={{ color: '#f97316', fontSize: '1.1rem' }}>⚡</span>
             <span style={{ color: '#f97316', fontSize: '1.1rem' }}>⚡</span>
