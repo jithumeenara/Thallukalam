@@ -37,30 +37,31 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     video.play().catch(() => {})
   }, [])
 
-  // Unlock video audio on first native pointer gesture (native listener = trusted context)
+  // Unlock video audio on first click — capture phase fires before React handlers.
+  // Chrome only creates "user activation" on click/pointerup/touchend, NOT pointerdown.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
     function unlock() {
       video!.muted = false
-      if (video!.paused) video!.play().catch(() => {})
     }
-    document.addEventListener('pointerdown', unlock, { once: true })
-    return () => document.removeEventListener('pointerdown', unlock)
+    document.addEventListener('click', unlock, { once: true, capture: true })
+    return () => document.removeEventListener('click', unlock, { capture: true })
   }, [])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleClick() {
     const video = videoRef.current
-    // Mute video so it doesn't overlap with the background mp3
-    if (video) video.muted = true
+    // Set volume to 0 (no permission needed) so video doesn't overlap the mp3.
+    // video.muted=true would re-trigger the autoplay policy; volume=0 is safe.
+    if (video) video.volume = 0
     onAudioStart?.()   // start background mp3 within gesture
     setBtnAnim(true)
     setShowLottie(true)
 
     setTimeout(() => {
-      if (video) { video.muted = true; video.pause() }
+      if (video) video.pause()
       setIsExiting(true)
       setTimeout(onEnter, 700)
     }, 320)
