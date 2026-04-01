@@ -13,7 +13,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnAnim,    setBtnAnim]    = useState(false)
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef  = useRef<HTMLVideoElement>(null)
-  const unmutedRef      = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setBtnVisible(true), 1500)
@@ -25,24 +24,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     // explicit play() call as safety net for browsers that ignore autoPlay
     const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
     video?.play().catch(() => {})
-  }, [])
-
-  // Unmute video on first user interaction (browsers block unmuted autoplay)
-  useEffect(() => {
-    const unmute = () => {
-      if (unmutedRef.current) return
-      unmutedRef.current = true
-      const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
-      if (!video) return
-      video.muted = false
-      if (video.paused) video.play().catch(() => {})
-    }
-    document.addEventListener('click',      unmute, { once: true })
-    document.addEventListener('touchstart', unmute, { once: true })
-    return () => {
-      document.removeEventListener('click',      unmute)
-      document.removeEventListener('touchstart', unmute)
-    }
   }, [])
 
   function handleClick() {
