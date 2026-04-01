@@ -17,9 +17,45 @@ const CONTENT_ITEMS: BannerItem[] = [
 
 const SEP: BannerItem = { text: 'തല്ലുകാലം വന്നാൽ', bg: '#1A4A1A', textColor: '#FFFFFF' }
 
-// Interleave content → sep → content → sep …
 const ROW: BannerItem[] = CONTENT_ITEMS.flatMap(item => [item, SEP])
 const ITEMS = [...ROW, ...ROW, ...ROW]
+
+function MarqueeRow({ direction, paused }: { direction: 'left' | 'right'; paused: boolean }) {
+  return (
+    <div
+      className="overflow-hidden w-full py-2"
+      style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)' }}
+    >
+      <div
+        className="flex items-center whitespace-nowrap gap-1"
+        style={{
+          animation: `marquee-${direction} 50s linear infinite`,
+          animationPlayState: paused ? 'paused' : 'running',
+          willChange: 'transform',
+        }}
+      >
+        {ITEMS.map((item, i) => (
+          <span
+            key={i}
+            className="inline-block px-5 py-2 flex-shrink-0"
+            style={{
+              background: item.bg,
+              color: item.textColor,
+              fontFamily: "'FKL-Chakram', sans-serif",
+              fontSize: 'clamp(1rem, 2.2vw, 1.35rem)',
+              fontWeight: 400,
+              letterSpacing: '0.02em',
+              boxShadow: `0 3px 14px ${item.bg}99`,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {item.text}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function ScrollingBanner() {
   const [visible, setVisible] = useState(false)
@@ -54,38 +90,18 @@ export default function ScrollingBanner() {
     >
       <div className="h-[2px] bg-gradient-to-r from-transparent via-cinema-gold/60 to-transparent" />
 
-      <div
-        className="overflow-hidden w-full py-3"
-        style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)' }}
-      >
-        <div
-          className="flex items-center whitespace-nowrap gap-1"
-          style={{
-            animation: 'marquee-left 50s linear infinite',
-            animationPlayState: paused ? 'paused' : 'running',
-            willChange: 'transform',
-          }}
-        >
-          {ITEMS.map((item, i) => (
-            <span
-              key={i}
-              className="inline-block px-5 py-2 flex-shrink-0"
-              style={{
-                background: item.bg,
-                color: item.textColor,
-                fontFamily: "'FKL-Chakram', sans-serif",
-                fontSize: 'clamp(1rem, 2.2vw, 1.35rem)',
-                fontWeight: 400,
-                letterSpacing: '0.02em',
-                boxShadow: `0 3px 14px ${item.bg}99`,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {item.text}
-            </span>
-          ))}
-        </div>
+      {/* Row 1 — left to right */}
+      <MarqueeRow direction="right" paused={paused} />
+
+      {/* Divider */}
+      <div className="flex items-center gap-2 px-6 opacity-20">
+        <div className="flex-1 h-[1px] bg-cinema-gold" />
+        <div className="w-1.5 h-1.5 rotate-45 bg-cinema-red" />
+        <div className="flex-1 h-[1px] bg-cinema-gold" />
       </div>
+
+      {/* Row 2 — right to left */}
+      <MarqueeRow direction="left" paused={paused} />
 
       <div className="h-[2px] bg-gradient-to-r from-transparent via-cinema-red/50 to-transparent" />
 
