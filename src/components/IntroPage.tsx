@@ -26,7 +26,7 @@ export default function IntroPage({ onEnter }: Props) {
   return (
     <div
       className={`
-        relative min-h-screen w-full flex flex-col items-center justify-center
+        relative min-h-screen w-full flex flex-col items-end justify-end
         overflow-hidden font-malayalam
         transition-opacity duration-700 ease-in-out
         ${isExiting ? 'opacity-0' : 'opacity-100'}
@@ -40,12 +40,13 @@ export default function IntroPage({ onEnter }: Props) {
         muted
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-cover z-0"
+        className="absolute inset-0 w-full h-full z-0"
+        style={{ objectFit: 'cover', objectPosition: 'center center' }}
         aria-hidden="true"
       />
 
       {/* Dark overlay so button is readable */}
-      <div className="absolute inset-0 z-10 bg-black/45 pointer-events-none" />
+      <div className="absolute inset-0 z-10 bg-black/35 pointer-events-none" />
 
       {/* Noise texture */}
       <div className="noise-overlay animate-flicker z-10" />
@@ -74,10 +75,10 @@ export default function IntroPage({ onEnter }: Props) {
         }}
       />
 
-      {/* ── CTA Button ── */}
+      {/* ── CTA Button — bottom center ── */}
       <div
         className={`
-          relative z-30
+          relative z-30 w-full flex flex-col items-center pb-12 sm:pb-16
           transition-all duration-700 ease-out
           ${btnVisible && !isExiting
             ? 'opacity-100 translate-y-0 pointer-events-auto'

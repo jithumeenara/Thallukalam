@@ -157,42 +157,40 @@ function Card({ card, index, onOpen }: CardProps) {
         <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none transition-all duration-300" style={{ background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`, opacity: hovered ? 1 : 0.4, boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none' }} />
         <div className="scanline-overlay opacity-25" />
 
-        {/* Content — icon top-left, text bottom-left */}
-        <div className="relative z-10 p-5 sm:p-6 h-full flex flex-col justify-between font-malayalam">
-          {/* Icon — top left */}
-          <div
-            className="text-[2.4rem] leading-none transition-all duration-300 ease-out self-start"
-            style={{ transform: hovered ? 'scale(1.25) rotate(-10deg)' : 'scale(1) rotate(0deg)' }}
-            aria-hidden="true"
-          >
-            {card.icon}
-          </div>
-
-          {/* Text — bottom left */}
-          <div>
-            <h3
-              className="font-malayalam font-black leading-tight text-[#f0e8cc]"
-              style={{
-                fontSize: 'clamp(1.2rem, 4vw, 1.55rem)',
-                textShadow: hovered ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)` : '0 2px 8px rgba(0,0,0,0.8)',
-                transition: 'text-shadow 0.3s ease',
-              }}
-            >
-              {card.title}
-            </h3>
-            <p
-              className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
-              style={{ fontSize: 'clamp(1rem, 3.2vw, 1.25rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
-            >
-              {card.subtitle}
-            </p>
-          </div>
-
-          <div
-            className="absolute bottom-0 left-0 h-[3px] transition-all duration-500 ease-out pointer-events-none"
-            style={{ width: hovered ? '100%' : '0%', background: `linear-gradient(90deg, ${card.accentColor}, transparent)`, boxShadow: hovered ? `0 0 8px 2px rgba(${card.accentRgb},0.5)` : 'none' }}
-          />
+        {/* Icon — absolute top-left */}
+        <div
+          className="absolute top-4 left-4 z-10 text-[2.4rem] leading-none transition-all duration-300 ease-out"
+          style={{ transform: hovered ? 'scale(1.25) rotate(-10deg)' : 'scale(1) rotate(0deg)' }}
+          aria-hidden="true"
+        >
+          {card.icon}
         </div>
+
+        {/* Text — absolute bottom-left */}
+        <div className="absolute bottom-5 left-5 right-5 z-10 font-malayalam">
+          <h3
+            className="font-malayalam font-black leading-tight text-[#f0e8cc]"
+            style={{
+              fontSize: 'clamp(1.2rem, 4vw, 1.55rem)',
+              textShadow: hovered ? `0 0 28px rgba(${card.accentRgb},0.8), 0 2px 10px rgba(0,0,0,0.9)` : '0 2px 8px rgba(0,0,0,0.8)',
+              transition: 'text-shadow 0.3s ease',
+            }}
+          >
+            {card.title}
+          </h3>
+          <p
+            className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
+            style={{ fontSize: 'clamp(1rem, 3.2vw, 1.25rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
+          >
+            {card.subtitle}
+          </p>
+        </div>
+
+        {/* Bottom accent line */}
+        <div
+          className="absolute bottom-0 left-0 h-[3px] transition-all duration-500 ease-out pointer-events-none z-10"
+          style={{ width: hovered ? '100%' : '0%', background: `linear-gradient(90deg, ${card.accentColor}, transparent)`, boxShadow: hovered ? `0 0 8px 2px rgba(${card.accentRgb},0.5)` : 'none' }}
+        />
 
         {/* Play hint */}
         <div className={`card-play-hint font-malayalam${hovered ? ' visible' : ''}`}>
