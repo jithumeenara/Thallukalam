@@ -127,8 +127,8 @@ export default function Footer() {
         </p>
 
         {/* Ownership text */}
-        <p className="text-center text-xs tracking-wide"
-          style={{ fontSize: '0.72rem', color: '#8c6060' }}
+        <p className="text-center tracking-wide"
+          style={{ fontSize: '1rem', color: '#8c6060' }}
         >
           Site owned by CPI(M) Thiruvananthapuram District Committee
         </p>
