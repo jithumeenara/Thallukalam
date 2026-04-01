@@ -29,28 +29,13 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     fetch('/lottie/click.json').then(r => r.json()).then(setLottieData).catch(() => {})
   }, [])
 
-  // Start video: muted autoplay is 100% reliable; after playback begins we try
-  // to unmute — Chrome allows this once the stream has started.
+  // Start video muted — guaranteed autoplay on every browser.
+  // Audio is enabled only inside handleClick (user gesture context).
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-
-    const tryUnmute = () => {
-      video.muted = false
-      // If the browser reverted muted (some strict agents), leave it
-    }
-
     video.muted = true
-    video.play()
-      .then(() => {
-        // Playback started — now try to unmute within the same microtask
-        tryUnmute()
-      })
-      .catch(() => {
-        // play() itself failed (very rare) — retry muted
-        video.muted = true
-        video.play().catch(() => {})
-      })
+    video.play().catch(() => {})
   }, [])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
