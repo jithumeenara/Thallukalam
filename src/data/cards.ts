@@ -139,6 +139,33 @@ export async function testGitHubToken(token: string): Promise<void> {
   }
 }
 
+// ── Social Links ───────────────────────────────────────────────────────────
+export interface SocialLinks {
+  instagram: string
+  facebook: string
+  youtube: string
+}
+
+const SOCIAL_KEY = 'thallikalam_social_v1'
+
+export const DEFAULT_SOCIAL: SocialLinks = {
+  instagram: '',
+  facebook: '',
+  youtube: '',
+}
+
+export function loadSocial(): SocialLinks {
+  try {
+    const raw = localStorage.getItem(SOCIAL_KEY)
+    if (raw) return { ...DEFAULT_SOCIAL, ...JSON.parse(raw) }
+  } catch {}
+  return DEFAULT_SOCIAL
+}
+
+export function saveSocialLocal(s: SocialLinks): void {
+  localStorage.setItem(SOCIAL_KEY, JSON.stringify(s))
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 export function extractYouTubeId(url: string): string | null {
   if (!url?.trim()) return null

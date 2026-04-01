@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
 import {
   loadCards, saveCardsLocal, saveCardsToGitHub, testGitHubToken,
-  GH_TOKEN_KEY, CardData,
+  loadSocial, saveSocialLocal,
+  GH_TOKEN_KEY, CardData, SocialLinks,
   extractYouTubeId, ACCENT_PRESETS, THUMBNAIL_OPTIONS,
 } from '../data/cards'
 
@@ -339,6 +340,94 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
   )
 }
 
+// ── Social Links Section ───────────────────────────────────────────────────
+
+function SocialLinksSection() {
+  const [social, setSocial] = useState<SocialLinks>(() => loadSocial())
+  const [saved, setSaved]   = useState(false)
+
+  function handleSave() {
+    saveSocialLocal(social)
+    // Also save to GitHub if token exists — write to public/social-links.json
+    const token = localStorage.getItem(GH_TOKEN_KEY)
+    if (token) {
+      const apiBase = `https://api.github.com/repos/jithumeenara/Thallukalam/contents/public/social-links.json`
+      const jsonStr = JSON.stringify(social, null, 2)
+      const bytes   = new TextEncoder().encode(jsonStr)
+      let binary = ''
+      bytes.forEach(b => (binary += String.fromCharCode(b)))
+      const content = btoa(binary)
+      // Get SHA first
+      fetch(apiBase, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } })
+        .then(r => r.ok ? r.json() : { sha: undefined })
+        .then((meta: { sha?: string }) =>
+          fetch(apiBase, {
+            method: 'PUT',
+            headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Update social links via admin panel', content, sha: meta.sha }),
+          })
+        ).catch(() => {})
+    }
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  return (
+    <div className="mt-6 pt-4 border-t border-cinema-border/20">
+      <h3 className="text-cinema-gold/80 text-sm font-semibold tracking-wider mb-4 flex items-center gap-2">
+        <span>🔗</span> Social Media Links
+      </h3>
+      <div className="space-y-3">
+        {/* Instagram */}
+        <div>
+          <label className="admin-label flex items-center gap-1.5">
+            <span style={{ color: '#E1306C' }}>●</span> Instagram URL
+          </label>
+          <input
+            type="url"
+            value={social.instagram}
+            onChange={e => setSocial(s => ({ ...s, instagram: e.target.value }))}
+            className="admin-input"
+            placeholder="https://www.instagram.com/yourpage"
+          />
+        </div>
+        {/* Facebook */}
+        <div>
+          <label className="admin-label flex items-center gap-1.5">
+            <span style={{ color: '#1877F2' }}>●</span> Facebook URL
+          </label>
+          <input
+            type="url"
+            value={social.facebook}
+            onChange={e => setSocial(s => ({ ...s, facebook: e.target.value }))}
+            className="admin-input"
+            placeholder="https://www.facebook.com/yourpage"
+          />
+        </div>
+        {/* YouTube */}
+        <div>
+          <label className="admin-label flex items-center gap-1.5">
+            <span style={{ color: '#FF0000' }}>●</span> YouTube URL
+          </label>
+          <input
+            type="url"
+            value={social.youtube}
+            onChange={e => setSocial(s => ({ ...s, youtube: e.target.value }))}
+            className="admin-input"
+            placeholder="https://www.youtube.com/@yourchannel"
+          />
+        </div>
+      </div>
+      <button onClick={handleSave} className="admin-btn-save mt-3">
+        {saved ? '✓ Social Links Saved!' : '💾 Save Social Links'}
+      </button>
+      <p className="text-cinema-border/40 text-xs mt-1">
+        {localStorage.getItem(GH_TOKEN_KEY) ? 'Saves to GitHub → visible on all devices instantly.' : 'Saves locally. Configure GitHub token above for all-device sync.'}
+      </p>
+    </div>
+  )
+}
+
 // ── Admin Panel ────────────────────────────────────────────────────────────
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error' | 'local'
@@ -572,6 +661,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <p className="text-sm">Click "+ Add New Card" to get started</p>
           </div>
         )}
+
+        {/* Social Links Section */}
+        <SocialLinksSection />
 
         {/* Save button (bottom) */}
         <div className="mt-6 pt-4 border-t border-cinema-border/20">
