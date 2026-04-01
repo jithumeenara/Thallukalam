@@ -115,7 +115,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
         ref={videoRef}
         src={VIDEO_SRC}
         loop
-        muted
         playsInline
         preload="auto"
         aria-hidden="true"
