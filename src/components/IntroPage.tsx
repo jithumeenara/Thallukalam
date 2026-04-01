@@ -29,27 +29,32 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     fetch('/lottie/click.json').then(r => r.json()).then(setLottieData).catch(() => {})
   }, [])
 
-  // Try autoplay with audio (works on desktop / return visitors).
-  // On block, fall back to muted so video still plays visually.
+  // Try unmuted autoplay on load; fall back to muted if browser blocks it.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    video.muted = false
     video.play().catch(() => {
       video.muted = true
       video.play().catch(() => {})
     })
   }, [])
 
-  // Silent fallback for mobile first-visit: unlock audio on the very first click
-  // (capture fires before any React handler, transparent to user — no UI required).
+  // On first click: pause → set unmuted → call play() explicitly.
+  // Calling play() inside a user-gesture always has audio permission.
+  // Never set muted=false on a playing video — Chrome pauses it as a penalty.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
     function unlock() {
-      if (!video!.muted) return   // already unmuted by auto-unmute above
+      if (!video!.muted) return          // auto-unmute already succeeded
+      const t = video!.currentTime
+      video!.pause()
       video!.muted = false
-      if (video!.paused) video!.play().catch(() => {})
+      video!.currentTime = t
+      video!.play().catch(() => {
+        video!.muted = true              // still blocked — keep playing muted
+        video!.play().catch(() => {})
+      })
     }
     document.addEventListener('click', unlock, { once: true, capture: true })
     return () => document.removeEventListener('click', unlock, { capture: true })
