@@ -19,6 +19,7 @@ export default function IntroPage({ onEnter }: Props) {
   }, [])
 
   function handleClick() {
+    videoRef.current?.pause()   // stop intro video audio before transitioning
     setIsExiting(true)
     setTimeout(onEnter, 750)
   }
@@ -37,7 +38,6 @@ export default function IntroPage({ onEnter }: Props) {
         ref={videoRef}
         src="/banar_video/Thallukalam.mp4"
         loop
-        muted
         playsInline
         preload="auto"
         className="absolute inset-0 w-full h-full z-0 object-contain sm:object-cover"
