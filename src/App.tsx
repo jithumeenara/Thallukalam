@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import IntroPage from './components/IntroPage'
 import HeroSection from './components/HeroSection'
 import CardsGrid from './components/CardsGrid'
+import ScrollingBanner from './components/ScrollingBanner'
 import Footer from './components/Footer'
 import VolumeButton from './components/VolumeButton'
 import AdminPage from './pages/AdminPage'
@@ -45,6 +46,7 @@ export default function App() {
       <VolumeButton isMuted={isMuted} onToggle={handleToggleMute} />
       <HeroSection />
       <CardsGrid />
+      <ScrollingBanner />
       <Footer />
     </div>
   )

@@ -382,6 +382,16 @@ html, body, #root {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Scrolling banner marquee ─── */
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+@keyframes marquee-right {
+  0%   { transform: translateX(-33.333%); }
+  100% { transform: translateX(0); }
+}
+
 /* ─── Section heading entrance ─── */
 .heading-hidden {
   opacity: 0;
