@@ -22,25 +22,37 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     return () => clearTimeout(t)
   }, [])
 
-  // Start video muted (guaranteed autoplay); unmute happens on first tap anywhere
+  // Start video: try unmuted first; fall back to muted (always succeeds)
   useEffect(() => {
-    desktopVideoRef.current?.play().catch(() => {})
-    mobileVideoRef.current?.play().catch(() => {})
+    const start = (video: HTMLVideoElement | null) => {
+      if (!video) return
+      video.play().catch(() => {
+        video.muted = true
+        video.play().catch(() => {})
+      })
+    }
+    start(desktopVideoRef.current)
+    start(mobileVideoRef.current)
   }, [])
 
-  // Pre-fetch Lottie animation JSON
+  // Load Lottie JSON from local public folder
   useEffect(() => {
-    fetch('https://assets2.lottiefiles.com/packages/lf20_uu0x8lqv.json')
+    fetch('/lottie/click.json')
       .then(r => r.json())
       .then(setLottieData)
       .catch(() => {})
   }, [])
 
-  // First tap anywhere on the page → unmute video
+  // First tap anywhere on the page → unmute video (restart if it was paused muted)
   function handlePageTap() {
     if (!muted) return
-    if (desktopVideoRef.current) desktopVideoRef.current.muted = false
-    if (mobileVideoRef.current)  mobileVideoRef.current.muted  = false
+    const unmute = (video: HTMLVideoElement | null) => {
+      if (!video) return
+      video.muted = false
+      if (video.paused) video.play().catch(() => {})
+    }
+    unmute(desktopVideoRef.current)
+    unmute(mobileVideoRef.current)
     setMuted(false)
   }
 
@@ -104,9 +116,9 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           letterSpacing: '0.08em',
           fontWeight: 700,
           fontStretch: 'condensed',
-          background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-          border: '2px solid rgba(255,200,80,0.6)',
-          boxShadow: '0 0 28px rgba(249,115,22,0.7), 0 0 8px rgba(220,38,38,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
+          background: 'linear-gradient(135deg, #cc0000 0%, #8b0000 100%)',
+          border: '2px solid rgba(255,100,100,0.55)',
+          boxShadow: '0 0 28px rgba(204,0,0,0.75), 0 0 10px rgba(139,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12)',
         }}
       >
         <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
