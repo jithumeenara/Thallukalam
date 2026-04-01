@@ -29,24 +29,16 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     fetch('/lottie/click.json').then(r => r.json()).then(setLottieData).catch(() => {})
   }, [])
 
-  // Start video muted — guaranteed autoplay on every browser.
+  // Try to autoplay with audio; browsers that allow it (desktop / return visitors) succeed.
+  // On block, fall back to muted so the video still plays visually.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    video.muted = true
-    video.play().catch(() => {})
-  }, [])
-
-  // Unlock video audio on first click — capture phase fires before React handlers.
-  // Chrome only creates "user activation" on click/pointerup/touchend, NOT pointerdown.
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    function unlock() {
-      video!.muted = false
-    }
-    document.addEventListener('click', unlock, { once: true, capture: true })
-    return () => document.removeEventListener('click', unlock, { capture: true })
+    video.muted = false
+    video.play().catch(() => {
+      video.muted = true
+      video.play().catch(() => {})
+    })
   }, [])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -71,7 +63,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
   const ctaButton = (extraClass = '') => (
     <div className="flex flex-col items-center gap-2">
-      <span className="hand-click-anim text-2xl select-none pointer-events-none">👆</span>
       <div className="relative flex items-center justify-center">
         {showLottie && lottieData && (
           <div className="absolute pointer-events-none z-50"
@@ -97,6 +88,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
         </button>
       </div>
+      <span className="hand-click-anim text-2xl select-none pointer-events-none">👆</span>
     </div>
   )
 
