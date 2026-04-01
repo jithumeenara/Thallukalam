@@ -40,8 +40,8 @@ export default function IntroPage({ onEnter }: Props) {
         muted
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full z-0"
-        style={{ objectFit: 'cover', objectPosition: 'center center' }}
+        className="absolute inset-0 w-full h-full z-0 object-contain sm:object-cover"
+        style={{ objectPosition: 'center center' }}
         aria-hidden="true"
       />
 
