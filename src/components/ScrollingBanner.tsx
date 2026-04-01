@@ -6,6 +6,7 @@ interface BannerItem {
   textColor: string
 }
 
+// ── Top row — unchanged cinematic style ────────────────────────────────────
 const ROW1: BannerItem[] = [
   { text: 'തമ്മിൽ തല്ലി',          bg: '#8B1A1A', textColor: '#FFE08A' },
   { text: 'ഭരണം ഭ്രഷ്ടാക്കി',      bg: '#C9A227', textColor: '#0B0F14' },
@@ -16,21 +17,26 @@ const ROW1: BannerItem[] = [
   { text: 'തല്ലുകാലം',              bg: '#6B2D8B', textColor: '#FFD700' },
 ]
 
-const ROW2: BannerItem[] = [
-  { text: 'ഇനി വേണ്ട',             bg: '#27AE60', textColor: '#0B0F14' },
-  { text: 'ആ നശിച്ച കാലം',          bg: '#C0392B', textColor: '#FFE08A' },
-  { text: 'മാറ്റം വേണം',            bg: '#C9A227', textColor: '#0B0F14' },
-  { text: 'ജനത ഉണരണം',             bg: '#1a3a5c', textColor: '#4A7FC1' },
-  { text: 'തൊഴിൽ വേണം',            bg: '#E67E22', textColor: '#0B0F14' },
-  { text: 'വികസനം വേണം',            bg: '#8B1A1A', textColor: '#FFE08A' },
-  { text: 'ശക്തമായ Kerala',         bg: '#16A085', textColor: '#ffffff' },
+// ── Bottom row — FKL-Chakram, solid screenshot-2 style ─────────────────────
+const CONTENT_ITEMS: BannerItem[] = [
+  { text: 'ആരോഗ്യം തകരും',        bg: '#FFD700', textColor: '#0B0F14' },
+  { text: 'പാഠപുസ്തകം മുടങ്ങും',  bg: '#D2691E', textColor: '#FFFFFF' },
+  { text: 'വ്യവസായം മുടങ്ങും',    bg: '#ADADAD', textColor: '#8B0000' },
+  { text: 'വികസനം മുടങ്ങും',       bg: '#C0392B', textColor: '#FFE08A' },
+  { text: 'റേഷൻ മുടങ്ങും',         bg: '#4A7FC1', textColor: '#FFFFFF' },
+  { text: 'പെൻഷൻ മുടങ്ങും',        bg: '#27AE60', textColor: '#0B0F14' },
 ]
 
-// Duplicate items for seamless infinite loop
+const SEP: BannerItem = { text: 'തല്ലുകാലം വന്നാൽ', bg: '#1A4A1A', textColor: '#FFFFFF' }
+
+// Interleave: content → sep → content → sep …
+const ROW2: BannerItem[] = CONTENT_ITEMS.flatMap(item => [item, SEP])
+
 const ITEMS1 = [...ROW1, ...ROW1, ...ROW1]
 const ITEMS2 = [...ROW2, ...ROW2, ...ROW2]
 
-function Separator() {
+// ── Separator symbol between ROW1 items ────────────────────────────────────
+function StarSep() {
   return (
     <span className="inline-flex items-center mx-3 text-cinema-gold/50 text-lg select-none" aria-hidden>
       ✦
@@ -38,28 +44,22 @@ function Separator() {
   )
 }
 
-interface RowProps {
-  items: BannerItem[]
-  direction: 'left' | 'right'
-  paused: boolean
-  speed: number
-}
-
-function MarqueeRow({ items, direction, paused, speed }: RowProps) {
+// ── Row 1 (cinematic dark boxes + ✦ separator) ─────────────────────────────
+function Row1Marquee({ paused }: { paused: boolean }) {
   return (
     <div className="overflow-hidden w-full py-2" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
       <div
         className="flex items-center whitespace-nowrap"
         style={{
-          animation: `marquee-${direction} ${speed}s linear infinite`,
+          animation: 'marquee-left 38s linear infinite',
           animationPlayState: paused ? 'paused' : 'running',
           willChange: 'transform',
         }}
       >
-        {items.map((item, i) => (
+        {ITEMS1.map((item, i) => (
           <span key={i} className="inline-flex items-center">
             <span
-              className="inline-block px-4 py-1.5 rounded-sm font-bold font-malayalam tracking-wide transition-all duration-200"
+              className="inline-block px-4 py-1.5 rounded-sm font-bold font-malayalam tracking-wide"
               style={{
                 background: item.bg,
                 color: item.textColor,
@@ -70,7 +70,7 @@ function MarqueeRow({ items, direction, paused, speed }: RowProps) {
             >
               {item.text}
             </span>
-            <Separator />
+            <StarSep />
           </span>
         ))}
       </div>
@@ -78,6 +78,42 @@ function MarqueeRow({ items, direction, paused, speed }: RowProps) {
   )
 }
 
+// ── Row 2 (FKL-Chakram, solid screenshot-2 style, no ✦ separator) ──────────
+function Row2Marquee({ paused }: { paused: boolean }) {
+  return (
+    <div className="overflow-hidden w-full py-2" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+      <div
+        className="flex items-center whitespace-nowrap gap-1"
+        style={{
+          animation: 'marquee-right 44s linear infinite',
+          animationPlayState: paused ? 'paused' : 'running',
+          willChange: 'transform',
+        }}
+      >
+        {ITEMS2.map((item, i) => (
+          <span
+            key={i}
+            className="inline-block px-5 py-2 flex-shrink-0"
+            style={{
+              background: item.bg,
+              color: item.textColor,
+              fontFamily: "'FKL-Chakram', sans-serif",
+              fontSize: 'clamp(1rem, 2.2vw, 1.35rem)',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              boxShadow: `0 3px 14px ${item.bg}99`,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {item.text}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Main export ────────────────────────────────────────────────────────────
 export default function ScrollingBanner() {
   const [visible, setVisible] = useState(false)
   const [paused,  setPaused]  = useState(false)
@@ -120,7 +156,7 @@ export default function ScrollingBanner() {
 
       {/* Row 1 — scrolls left */}
       <div className="py-1">
-        <MarqueeRow items={ITEMS1} direction="left" paused={paused} speed={38} />
+        <Row1Marquee paused={paused} />
       </div>
 
       {/* Divider between rows */}
@@ -130,9 +166,9 @@ export default function ScrollingBanner() {
         <div className="flex-1 h-[1px] bg-cinema-gold" />
       </div>
 
-      {/* Row 2 — scrolls right */}
+      {/* Row 2 — scrolls right, FKL-Chakram solid boxes */}
       <div className="py-1">
-        <MarqueeRow items={ITEMS2} direction="right" paused={paused} speed={44} />
+        <Row2Marquee paused={paused} />
       </div>
 
       {/* Bottom gold line */}

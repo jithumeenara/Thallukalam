@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── FKL-Chakram font ─── */
+@font-face {
+  font-family: 'FKL-Chakram';
+  src: url('/Fonts/FKL-Chakram-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─── Base resets ─── */
 *, *::before, *::after {
   box-sizing: border-box;
