@@ -6,6 +6,12 @@ interface Props {
   onAudioStart?: () => void
 }
 
+// YouTube embed: autoplay muted, no controls, stop at 50 s, no related
+const YT_SRC =
+  'https://www.youtube.com/embed/4NaY00WjFME' +
+  '?autoplay=1&mute=1&controls=0&loop=0&end=50' +
+  '&rel=0&modestbranding=1&playsinline=1&enablejsapi=1'
+
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnVisible,  setBtnVisible]  = useState(false)
   const [isExiting,   setIsExiting]   = useState(false)
@@ -13,8 +19,16 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [muted,       setMuted]       = useState(true)
   const [showLottie,  setShowLottie]  = useState(false)
   const [lottieData,  setLottieData]  = useState<object | null>(null)
-  const desktopVideoRef = useRef<HTMLVideoElement>(null)
-  const mobileVideoRef  = useRef<HTMLVideoElement>(null)
+  const desktopIframeRef = useRef<HTMLIFrameElement>(null)
+  const mobileIframeRef  = useRef<HTMLIFrameElement>(null)
+  const exitingRef       = useRef(false)   // non-reactive flag for message handler
+
+  // Send command to both YouTube iframes via postMessage
+  const postYT = (func: string, args: unknown = '') => {
+    const msg = JSON.stringify({ event: 'command', func, args })
+    desktopIframeRef.current?.contentWindow?.postMessage(msg, '*')
+    mobileIframeRef.current?.contentWindow?.postMessage(msg, '*')
+  }
 
   // Show button after 1.5 s
   useEffect(() => {
@@ -22,20 +36,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     return () => clearTimeout(t)
   }, [])
 
-  // Start video: try unmuted first; fall back to muted (always succeeds)
-  useEffect(() => {
-    const start = (video: HTMLVideoElement | null) => {
-      if (!video) return
-      video.play().catch(() => {
-        video.muted = true
-        video.play().catch(() => {})
-      })
-    }
-    start(desktopVideoRef.current)
-    start(mobileVideoRef.current)
-  }, [])
-
-  // Load Lottie JSON from local public folder
+  // Load cursor-click Lottie animation from local file
   useEffect(() => {
     fetch('/lottie/click.json')
       .then(r => r.json())
@@ -43,27 +44,39 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
       .catch(() => {})
   }, [])
 
-  // First tap anywhere on the page → unmute video (restart if it was paused muted)
+  // Loop YouTube: when video ends at 50 s, seek back to 0 and replay
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (exitingRef.current) return
+      try {
+        const d = JSON.parse(e.data as string)
+        if (d.event === 'onStateChange' && d.info === 0) {
+          postYT('seekTo', [0, true])
+          postYT('playVideo')
+        }
+      } catch { /* non-YT messages */ }
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  // First tap anywhere → unmute YouTube (browser allows this in gesture context)
   function handlePageTap() {
     if (!muted) return
-    const unmute = (video: HTMLVideoElement | null) => {
-      if (!video) return
-      video.muted = false
-      if (video.paused) video.play().catch(() => {})
-    }
-    unmute(desktopVideoRef.current)
-    unmute(mobileVideoRef.current)
+    postYT('unMute')
     setMuted(false)
   }
 
+  // Button click → mute YT first (no overlap), start mp3, animate, transition
   function handleClick() {
-    handlePageTap()           // unmute if not already
-    onAudioStart?.()          // start mp3 (within gesture context)
+    postYT('mute')          // silence YT BEFORE starting mp3
+    setMuted(true)
+    onAudioStart?.()        // start background mp3 within gesture context
     setBtnAnim(true)
-    setShowLottie(true)       // trigger burst animation
+    setShowLottie(true)
     setTimeout(() => {
-      desktopVideoRef.current?.pause()
-      mobileVideoRef.current?.pause()
+      exitingRef.current = true
+      postYT('pauseVideo')
       setIsExiting(true)
       setTimeout(onEnter, 750)
     }, 300)
@@ -74,13 +87,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     <button
       onClick={handleClick}
       disabled={!btnVisible || isExiting}
-      className="relative px-10 py-4 text-cinema-gold border border-cinema-red/60 bg-cinema-deep/90 hover:bg-cinema-red/20 hover:border-cinema-gold/80 active:scale-95 transition-all duration-200 group"
+      className={`relative px-10 py-4 text-cinema-gold border border-cinema-red/60 bg-cinema-deep/90
+        hover:bg-cinema-red/20 hover:border-cinema-gold/80 active:scale-95 transition-all duration-200
+        group btn-pulse-anim ${btnAnim ? 'btn-tap-anim' : ''}`}
       style={{
         clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
         fontSize: 'clamp(0.95rem, 2.2vw, 1.15rem)',
         letterSpacing: '0.08em',
         fontWeight: 600,
-        boxShadow: '0 0 20px rgba(201,162,39,0.25)',
       }}
     >
       <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -91,25 +105,21 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     </button>
   )
 
-  // ── Mobile CTA button (vibrant orange-red + Lottie burst) ───────────────
+  // ── Mobile CTA button (red + continuous pulse + Lottie click burst) ──────
   const mobileBtn = (
     <div className="relative flex items-center justify-center">
-      {/* Lottie burst overlay */}
+      {/* Cursor-click Lottie burst on tap */}
       {showLottie && lottieData && (
         <div className="absolute pointer-events-none z-50"
           style={{ width: 220, height: 220, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
-          <Lottie
-            animationData={lottieData}
-            loop={false}
-            autoplay={true}
-            onComplete={() => setShowLottie(false)}
-          />
+          <Lottie animationData={lottieData} loop={false} autoplay={true}
+            onComplete={() => setShowLottie(false)} />
         </div>
       )}
       <button
         onClick={handleClick}
         disabled={!btnVisible || isExiting}
-        className={`font-malayalam relative px-10 py-4 text-white ${btnAnim ? 'btn-tap-anim' : ''}`}
+        className={`font-malayalam relative px-10 py-4 text-white btn-pulse-anim ${btnAnim ? 'btn-tap-anim' : ''}`}
         style={{
           clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
           fontSize: 'clamp(1.05rem, 5vw, 1.25rem)',
@@ -117,8 +127,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           fontWeight: 700,
           fontStretch: 'condensed',
           background: 'linear-gradient(135deg, #cc0000 0%, #8b0000 100%)',
-          border: '2px solid rgba(255,100,100,0.55)',
-          boxShadow: '0 0 28px rgba(204,0,0,0.75), 0 0 10px rgba(139,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12)',
+          border: '2px solid rgba(255,100,100,0.5)',
         }}
       >
         <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
@@ -128,19 +137,33 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
   return (
     <div
-      className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ease-in-out ${isExiting ? 'opacity-0' : 'opacity-100'}`}
+      className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}
       onPointerDown={handlePageTap}
     >
 
-      {/* ════════════════════════════════════════
-          DESKTOP layout (≥ 640 px)
-          ════════════════════════════════════════ */}
+      {/* ════════ DESKTOP (≥ 640 px) ════════ */}
       <div className="hidden sm:block">
-        <video ref={desktopVideoRef} src="/banar_video/Thallukalam.mp4"
-          loop playsInline preload="auto" aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          style={{ objectPosition: 'center center' }}
-        />
+
+        {/* YouTube background — scaled to cover viewport like a video */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <iframe
+            ref={desktopIframeRef}
+            src={YT_SRC}
+            title="intro"
+            allow="autoplay; encrypted-media"
+            className="absolute"
+            style={{
+              top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '100vw',
+              height: '56.25vw',
+              minHeight: '100vh',
+              minWidth: '177.78vh',
+              border: 'none',
+            }}
+          />
+        </div>
+
         <div className="absolute inset-0 z-10 bg-black/35 pointer-events-none" />
         <div className="noise-overlay animate-flicker z-10" />
         <div className="scanline-overlay z-10" />
@@ -149,11 +172,12 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(240,192,64,0.9) 45%, transparent 100%)', filter: 'blur(1.5px)' }} />
         <div className="absolute top-[5%] right-[18%] w-[1.5px] h-[80%] pointer-events-none animate-lightning-2 z-20"
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(192,57,43,0.85) 50%, transparent 100%)', filter: 'blur(1px)' }} />
-        {/* Tap-to-unmute badge */}
+
+        {/* Tap-to-unmute hint */}
         {muted && (
           <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
-            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.75rem', color: '#fff', letterSpacing: '0.05em' }}>
-            <span style={{ fontSize: '1rem' }}>🔇</span> tap for audio
+            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.75rem', color: '#fff', letterSpacing: '0.05em' }}>
+            <span>🔇</span> tap for audio
           </div>
         )}
 
@@ -166,16 +190,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
         <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-cinema-deep to-transparent pointer-events-none z-20" />
       </div>
 
-      {/* ════════════════════════════════════════
-          MOBILE layout (< 640 px)
-          ════════════════════════════════════════ */}
+      {/* ════════ MOBILE (< 640 px) ════════ */}
       <div className="sm:hidden flex flex-col items-center justify-center min-h-screen relative gap-6 py-8">
 
-        {/* Tap-to-unmute badge (mobile) */}
+        {/* Tap-to-unmute hint */}
         {muted && (
           <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
-            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.7rem', color: '#fff', letterSpacing: '0.05em' }}>
-            <span style={{ fontSize: '0.9rem' }}>🔇</span> tap for audio
+            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.7rem', color: '#fff', letterSpacing: '0.05em' }}>
+            <span>🔇</span> tap for audio
           </div>
         )}
 
@@ -200,10 +222,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
         {/* Logo */}
         <div className="relative z-10 flex flex-col items-center">
-          <img
-            src="/logo.svg"
-            alt="തല്ലുകാലം"
-            draggable={false}
+          <img src="/logo.svg" alt="തല്ലുകാലം" draggable={false}
             style={{
               width: 'min(72vw, 300px)',
               filter: 'drop-shadow(0 0 22px rgba(201,162,39,0.75)) drop-shadow(0 2px 10px rgba(192,57,43,0.5))',
@@ -215,23 +234,24 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           </div>
         </div>
 
-        {/* TV box */}
+        {/* TV box with YouTube iframe */}
         <div className="relative z-10 px-4 w-full">
-          {/* Triangle crown notch */}
           <div className="absolute left-1/2 -translate-x-1/2 z-20"
             style={{ top: '-15px', width: 0, height: 0,
               borderLeft: '22px solid transparent', borderRight: '22px solid transparent',
-              borderBottom: '16px solid #f97316' }}
+              borderBottom: '16px solid #cc0000' }}
           />
-          {/* Orange bordered screen */}
           <div className="w-full rounded-[18px] overflow-hidden" style={{
-            border: '5px solid #f97316',
-            boxShadow: '0 0 0 1px rgba(249,115,22,0.3), 0 0 32px rgba(249,115,22,0.55), 0 0 70px rgba(249,115,22,0.18), 0 8px 32px rgba(0,0,0,0.8)',
+            border: '5px solid #cc0000',
+            boxShadow: '0 0 0 1px rgba(204,0,0,0.3), 0 0 32px rgba(204,0,0,0.55), 0 0 70px rgba(204,0,0,0.18), 0 8px 32px rgba(0,0,0,0.8)',
           }}>
-            <video ref={mobileVideoRef} src="/banar_video/Thallukalam.mp4"
-              loop playsInline preload="auto"
+            <iframe
+              ref={mobileIframeRef}
+              src={YT_SRC}
+              title="intro-mobile"
+              allow="autoplay; encrypted-media"
               className="w-full block"
-              style={{ aspectRatio: '16/9', objectFit: 'cover', objectPosition: 'center' }}
+              style={{ aspectRatio: '16/9', border: 'none' }}
             />
           </div>
         </div>
@@ -243,7 +263,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
             ▼ &nbsp; SCROLL TO EXPLORE &nbsp; ▼
           </p>
         </div>
-
       </div>
     </div>
   )
