@@ -20,14 +20,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
   }, [])
 
   useEffect(() => {
-    // Start muted (required for autoplay), then unmute once playing begins.
-    // Browsers block unmuted autoplay but allow JS unmute after muted playback starts.
     const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
     if (!video) return
-    video.play().catch(() => {})
-    const unmute = () => { video.muted = false }
-    video.addEventListener('playing', unmute, { once: true })
-    return () => video.removeEventListener('playing', unmute)
+    // Try playing with audio; if browser blocks it fall back to muted autoplay
+    video.muted = false
+    video.play().catch(() => {
+      video.muted = true
+      video.play().catch(() => {})
+    })
   }, [])
 
   function handleClick() {
