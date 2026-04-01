@@ -6,12 +6,13 @@ interface Props {
   onAudioStart?: () => void
 }
 
-// mute=1 ensures autoplay; we unmute via postMessage once the player is ready
+// youtube-nocookie = less branding; loop=1&playlist=ID = native loop, no end screen
+const YT_ID  = '4NaY00WjFME'
 const YT_SRC =
-  'https://www.youtube.com/embed/4NaY00WjFME' +
-  '?autoplay=1&mute=1&controls=0&loop=0&end=50' +
+  `https://www.youtube-nocookie.com/embed/${YT_ID}` +
+  `?autoplay=1&mute=1&controls=0&loop=1&playlist=${YT_ID}` +
   '&rel=0&modestbranding=1&playsinline=1&enablejsapi=1' +
-  '&disablekb=1&iv_load_policy=3&fs=0'
+  '&disablekb=1&iv_load_policy=3&fs=0&showinfo=0'
 
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
   const [btnVisible, setBtnVisible] = useState(false)
@@ -41,22 +42,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
       .then(r => r.json())
       .then(setLottieData)
       .catch(() => {})
-  }, [])
-
-  // Loop: when YouTube ends at 50 s, restart from 0
-  useEffect(() => {
-    const onMsg = (e: MessageEvent) => {
-      if (exitingRef.current) return
-      try {
-        const d = JSON.parse(e.data as string)
-        if (d.event === 'onStateChange' && d.info === 0) {
-          postYT('seekTo', [0, true])
-          postYT('playVideo')
-        }
-      } catch { /* ignore non-YT messages */ }
-    }
-    window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
   }, [])
 
   // Once the iframe has loaded, try to unmute (works in browsers with autoplay permission)
@@ -224,7 +209,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
               borderLeft: '22px solid transparent', borderRight: '22px solid transparent',
               borderBottom: '16px solid #cc0000' }}
           />
-          <div className="w-full rounded-[18px] overflow-hidden" style={{
+          <div className="relative w-full rounded-[18px] overflow-hidden" style={{
             border: '5px solid #cc0000',
             boxShadow: '0 0 0 1px rgba(204,0,0,0.3), 0 0 32px rgba(204,0,0,0.55), 0 0 70px rgba(204,0,0,0.18), 0 8px 32px rgba(0,0,0,0.8)',
           }}>
@@ -235,8 +220,10 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
               allow="autoplay; encrypted-media"
               onLoad={handleIframeLoad}
               className="w-full block"
-              style={{ aspectRatio: '16/9', border: 'none' }}
+              style={{ aspectRatio: '16/9', border: 'none', display: 'block' }}
             />
+            {/* Transparent cover — blocks taps reaching YouTube so controls never appear */}
+            <div className="absolute inset-0 z-10" style={{ background: 'transparent' }} />
           </div>
         </div>
 
