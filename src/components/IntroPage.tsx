@@ -18,10 +18,20 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     return () => clearTimeout(t)
   }, [])
 
-  // Kick off muted autoplay (100 % reliable across all browsers)
+  // Try unmuted play first; fall back to muted if browser blocks it.
+  // We manage play() entirely in JS (no autoPlay/muted HTML attrs on the video)
+  // so there is no browser-initiated play() racing against ours.
   useEffect(() => {
-    desktopVideoRef.current?.play().catch(() => {})
-    mobileVideoRef.current?.play().catch(() => {})
+    const tryPlay = (video: HTMLVideoElement | null) => {
+      if (!video) return
+      video.play().catch(() => {
+        // Browser blocked unmuted autoplay → retry muted
+        video.muted = true
+        video.play().catch(() => {})
+      })
+    }
+    tryPlay(desktopVideoRef.current)
+    tryPlay(mobileVideoRef.current)
   }, [])
 
   function handleClick() {
@@ -90,7 +100,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           ════════════════════════════════════════ */}
       <div className="hidden sm:block">
         <video ref={desktopVideoRef} src="/banar_video/Thallukalam.mp4"
-          loop muted playsInline autoPlay preload="auto" aria-hidden="true"
+          loop playsInline preload="auto" aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover z-0"
           style={{ objectPosition: 'center center' }}
         />
@@ -166,7 +176,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
             boxShadow: '0 0 0 1px rgba(249,115,22,0.3), 0 0 32px rgba(249,115,22,0.55), 0 0 70px rgba(249,115,22,0.18), 0 8px 32px rgba(0,0,0,0.8)',
           }}>
             <video ref={mobileVideoRef} src="/banar_video/Thallukalam.mp4"
-              loop muted playsInline autoPlay preload="auto"
+              loop playsInline preload="auto"
               className="w-full block"
               style={{ aspectRatio: '16/9', objectFit: 'cover', objectPosition: 'center' }}
             />
