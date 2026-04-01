@@ -9,11 +9,12 @@ interface Props {
 const VIDEO_SRC = '/Landing/landing.mp4'
 
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
-  const [btnVisible, setBtnVisible] = useState(false)
-  const [isExiting,  setIsExiting]  = useState(false)
-  const [btnAnim,    setBtnAnim]    = useState(false)
-  const [showLottie, setShowLottie] = useState(false)
-  const [lottieData, setLottieData] = useState<object | null>(null)
+  const [btnVisible,     setBtnVisible]     = useState(false)
+  const [isExiting,      setIsExiting]      = useState(false)
+  const [btnAnim,        setBtnAnim]        = useState(false)
+  const [showLottie,     setShowLottie]     = useState(false)
+  const [lottieData,     setLottieData]     = useState<object | null>(null)
+  const [audioUnlocked,  setAudioUnlocked]  = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -29,32 +30,35 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     fetch('/lottie/click.json').then(r => r.json()).then(setLottieData).catch(() => {})
   }, [])
 
-  // Try unmuted autoplay on load; fall back to muted if browser blocks it.
+  // Try unmuted autoplay on load; if browser blocks, fall back to muted.
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    video.play().catch(() => {
-      video.muted = true
-      video.play().catch(() => {})
-    })
+    video.play()
+      .then(() => setAudioUnlocked(true))   // unmuted play succeeded — hide indicator
+      .catch(() => {
+        video.muted = true
+        video.play().catch(() => {})
+        // audioUnlocked stays false → mute indicator stays visible
+      })
   }, [])
 
-  // On first click: pause → set unmuted → call play() explicitly.
-  // Calling play() inside a user-gesture always has audio permission.
-  // Never set muted=false on a playing video — Chrome pauses it as a penalty.
+  // First click fallback: pause → unmute → play() in gesture context (never errors).
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
     function unlock() {
-      if (!video!.muted) return          // auto-unmute already succeeded
+      if (!video!.muted) return
       const t = video!.currentTime
       video!.pause()
       video!.muted = false
       video!.currentTime = t
-      video!.play().catch(() => {
-        video!.muted = true              // still blocked — keep playing muted
-        video!.play().catch(() => {})
-      })
+      video!.play()
+        .then(() => setAudioUnlocked(true))
+        .catch(() => {
+          video!.muted = true
+          video!.play().catch(() => {})
+        })
     }
     document.addEventListener('click', unlock, { once: true, capture: true })
     return () => document.removeEventListener('click', unlock, { capture: true })
@@ -64,12 +68,12 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
   function handleClick() {
     const video = videoRef.current
-    onAudioStart?.()   // start background mp3 within gesture context
+    onAudioStart?.()
     setBtnAnim(true)
     setShowLottie(true)
 
     setTimeout(() => {
-      if (video) video.pause()   // video audio stops naturally; mp3 continues
+      if (video) video.pause()
       setIsExiting(true)
       setTimeout(onEnter, 700)
     }, 320)
@@ -125,6 +129,25 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover z-0"
       />
+
+      {/* ── Mute indicator — visible until audio is unlocked ── */}
+      {!audioUnlocked && !isExiting && (
+        <div className="absolute top-4 right-4 z-50 pointer-events-none mute-badge-anim"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            borderRadius: 999,
+            padding: '5px 13px 5px 10px',
+            color: 'white',
+          }}>
+          <span style={{ fontSize: '1rem', lineHeight: 1 }}>🔇</span>
+          <span style={{ fontSize: '0.65rem', letterSpacing: '0.08em', opacity: 0.9, fontFamily: 'sans-serif' }}>
+            TAP FOR AUDIO
+          </span>
+        </div>
+      )}
 
       {/* ════════ DESKTOP overlays (≥ 640 px) ════════ */}
       <div className="hidden sm:block">
@@ -188,7 +211,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
             border: '5px solid #cc0000',
             boxShadow: '0 0 0 1px rgba(204,0,0,0.3), 0 0 32px rgba(204,0,0,0.6), 0 0 70px rgba(204,0,0,0.2), 0 8px 32px rgba(0,0,0,0.85)',
           }}>
-            {/* Mirror the background video in a contained 16:9 box */}
             <video
               src={VIDEO_SRC}
               loop

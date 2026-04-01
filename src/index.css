@@ -242,6 +242,15 @@ html, body, #root {
   animation: btn-pulse 2s ease-in-out infinite;
 }
 
+/* ─── Mute badge pulse ─── */
+@keyframes mute-badge {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.06); }
+}
+.mute-badge-anim {
+  animation: mute-badge 1.6s ease-in-out infinite;
+}
+
 /* ─── Clicking hand jump animation ─── */
 @keyframes hand-click {
   0%,  45%, 100% { transform: translateY(0)    rotate(-15deg); }
