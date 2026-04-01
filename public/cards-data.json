@@ -21,42 +21,42 @@
   },
   {
     "id": 3,
-    "title": "തമ്മിൽ തല്ലി",
-    "subtitle": "ആരോഗ്യം തകർത്ത കാലം",
+    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "subtitle": "ആരോഗ്യം തകരും",
     "icon": "🩺",
-    "thumbnail": "/banar_video/ffout080.gif",
+    "thumbnail": "https://img.youtube.com/vi/Y1c8sV-91RU/maxresdefault.jpg",
     "accentColor": "#C0392B",
     "accentRgb": "192,57,43",
-    "youtubeUrl": ""
+    "youtubeUrl": "https://youtu.be/Y1c8sV-91RU"
   },
   {
     "id": 4,
-    "title": "തമ്മിൽ തല്ലി",
-    "subtitle": "പെൻഷൻ തരാത്ത കാലം",
+    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "subtitle": "പെൻഷൻ മുടങ്ങും",
     "icon": "👴",
-    "thumbnail": "/banar_video/ffout112.gif",
+    "thumbnail": "https://img.youtube.com/vi/tZSfW35Qn9k/maxresdefault.jpg",
     "accentColor": "#27AE60",
     "accentRgb": "39,174,96",
-    "youtubeUrl": ""
+    "youtubeUrl": "https://youtu.be/tZSfW35Qn9k"
   },
   {
     "id": 5,
-    "title": "തമ്മിൽ തല്ലി",
+    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
     "subtitle": "വികസനം മുടക്കിയ കാലം",
     "icon": "🏗️",
-    "thumbnail": "/banar_video/ffout144.gif",
+    "thumbnail": "https://img.youtube.com/vi/irZPKzcsHBA/maxresdefault.jpg",
     "accentColor": "#E67E22",
     "accentRgb": "230,126,34",
-    "youtubeUrl": ""
+    "youtubeUrl": "https://youtu.be/irZPKzcsHBA"
   },
   {
     "id": 6,
-    "title": "തമ്മിൽ തല്ലി",
-    "subtitle": "തൊഴിലില്ലാതാക്കിയ കാലം",
+    "title": "തമ്മിൽ തല്ലുകാർ വന്നാൽ",
+    "subtitle": "വ്യവസായം മുടങ്ങും",
     "icon": "⚒️",
-    "thumbnail": "/banar_video/ffout176.gif",
+    "thumbnail": "https://img.youtube.com/vi/90vHe07Uc0Y/maxresdefault.jpg",
     "accentColor": "#9B59B6",
     "accentRgb": "155,89,182",
-    "youtubeUrl": ""
+    "youtubeUrl": "https://youtu.be/90vHe07Uc0Y"
   }
 ]
