@@ -19,8 +19,13 @@ export default function IntroPage({ onEnter }: Props) {
   }, [])
 
   useEffect(() => {
-    if (IS_MOBILE) mobileVideoRef.current?.play().catch(() => {})
-    else           desktopVideoRef.current?.play().catch(() => {})
+    const video = IS_MOBILE ? mobileVideoRef.current : desktopVideoRef.current
+    if (!video) return
+    // Muted autoplay is universally allowed; try to unmute after play starts
+    video.muted = true
+    video.play()
+      .then(() => { video.muted = false })   // unmute if browser allows
+      .catch(() => {})
   }, [])
 
   function handleClick() {
@@ -127,24 +132,17 @@ export default function IntroPage({ onEnter }: Props) {
         <div className="absolute top-[40%] right-0 z-0 select-none pointer-events-none"
           style={{ fontSize: '2.6rem', color: '#444', opacity: 0.25, transform: 'rotate(15deg)' }}>⚡</div>
 
-        {/* Title — Anek Malayalam Condensed */}
+        {/* Logo */}
         <div className="relative z-10 flex flex-col items-center">
-          <h1
-            className="font-malayalam font-black text-center leading-none select-none"
+          <img
+            src="/logo.svg"
+            alt="തല്ലുകാലം"
+            draggable={false}
             style={{
-              fontSize: 'clamp(3.4rem, 17vw, 5rem)',
-              fontStretch: 'condensed',
-              color: '#FFD700',
-              textShadow: [
-                '2px  2px 0 #A06010',
-                '4px  4px 0 #6B3A08',
-                '6px  6px 10px rgba(0,0,0,0.65)',
-                '0 0 35px rgba(255,200,0,0.55)',
-              ].join(', '),
+              width: 'min(72vw, 300px)',
+              filter: 'drop-shadow(0 0 22px rgba(201,162,39,0.75)) drop-shadow(0 2px 10px rgba(192,57,43,0.5))',
             }}
-          >
-            തല്ലുകാലം
-          </h1>
+          />
           {/* small lightning accents */}
           <div className="flex gap-3 mt-1 opacity-80">
             <span style={{ color: '#f97316', fontSize: '1.1rem' }}>⚡</span>
