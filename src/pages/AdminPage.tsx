@@ -456,8 +456,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           {showTokenSection && (
             <div className="px-4 pb-4 border-t border-cinema-border/20">
               <p className="text-cinema-border/60 text-xs mt-3 mb-3 leading-relaxed">
-                Paste a GitHub Personal Access Token (PAT) with <strong className="text-cinema-gold/70">repo</strong> scope.
-                Once set, "Save All" will commit changes to GitHub — making them visible on all devices in ~2 minutes.
+                Paste a GitHub Personal Access Token (PAT).<br />
+                • <strong className="text-cinema-gold/70">Fine-grained token</strong>: select repo → set <strong className="text-cinema-gold/70">Contents: Read and write</strong><br />
+                • <strong className="text-cinema-gold/70">Classic token</strong>: check the <strong className="text-cinema-gold/70">repo</strong> scope<br />
+                Once set, "Save All" commits to GitHub — visible on all devices instantly.
               </p>
               <div className="flex gap-2">
                 <input
