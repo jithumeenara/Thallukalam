@@ -242,6 +242,18 @@ html, body, #root {
   animation: btn-pulse 2s ease-in-out infinite;
 }
 
+/* ─── Clicking hand jump animation ─── */
+@keyframes hand-click {
+  0%,  45%, 100% { transform: translateY(0)    rotate(-15deg); }
+  20%             { transform: translateY(10px) rotate(-15deg); }
+  30%             { transform: translateY(4px)  rotate(-15deg); }
+}
+.hand-click-anim {
+  display: inline-block;
+  animation: hand-click 1.4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
 /* ─── Intro background radial ─── */
 .intro-bg {
   background: radial-gradient(

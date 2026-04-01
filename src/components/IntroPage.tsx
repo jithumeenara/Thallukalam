@@ -6,24 +6,23 @@ interface Props {
   onAudioStart?: () => void
 }
 
-// YouTube embed: autoplay muted, no controls, stop at 50 s, no related
+// mute=1 ensures autoplay; we unmute via postMessage once the player is ready
 const YT_SRC =
   'https://www.youtube.com/embed/4NaY00WjFME' +
   '?autoplay=1&mute=1&controls=0&loop=0&end=50' +
-  '&rel=0&modestbranding=1&playsinline=1&enablejsapi=1'
+  '&rel=0&modestbranding=1&playsinline=1&enablejsapi=1' +
+  '&disablekb=1&iv_load_policy=3&fs=0'
 
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
-  const [btnVisible,  setBtnVisible]  = useState(false)
-  const [isExiting,   setIsExiting]   = useState(false)
-  const [btnAnim,     setBtnAnim]     = useState(false)
-  const [muted,       setMuted]       = useState(true)
-  const [showLottie,  setShowLottie]  = useState(false)
-  const [lottieData,  setLottieData]  = useState<object | null>(null)
+  const [btnVisible, setBtnVisible] = useState(false)
+  const [isExiting,  setIsExiting]  = useState(false)
+  const [btnAnim,    setBtnAnim]    = useState(false)
+  const [showLottie, setShowLottie] = useState(false)
+  const [lottieData, setLottieData] = useState<object | null>(null)
   const desktopIframeRef = useRef<HTMLIFrameElement>(null)
   const mobileIframeRef  = useRef<HTMLIFrameElement>(null)
-  const exitingRef       = useRef(false)   // non-reactive flag for message handler
+  const exitingRef       = useRef(false)
 
-  // Send command to both YouTube iframes via postMessage
   const postYT = (func: string, args: unknown = '') => {
     const msg = JSON.stringify({ event: 'command', func, args })
     desktopIframeRef.current?.contentWindow?.postMessage(msg, '*')
@@ -36,7 +35,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     return () => clearTimeout(t)
   }, [])
 
-  // Load cursor-click Lottie animation from local file
+  // Load cursor-click Lottie animation
   useEffect(() => {
     fetch('/lottie/click.json')
       .then(r => r.json())
@@ -44,7 +43,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
       .catch(() => {})
   }, [])
 
-  // Loop YouTube: when video ends at 50 s, seek back to 0 and replay
+  // Loop: when YouTube ends at 50 s, restart from 0
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (exitingRef.current) return
@@ -54,24 +53,21 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
           postYT('seekTo', [0, true])
           postYT('playVideo')
         }
-      } catch { /* non-YT messages */ }
+      } catch { /* ignore non-YT messages */ }
     }
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
   }, [])
 
-  // First tap anywhere → unmute YouTube (browser allows this in gesture context)
-  function handlePageTap() {
-    if (!muted) return
-    postYT('unMute')
-    setMuted(false)
+  // Once the iframe has loaded, try to unmute (works in browsers with autoplay permission)
+  function handleIframeLoad() {
+    setTimeout(() => postYT('unMute'), 800)
   }
 
-  // Button click → mute YT first (no overlap), start mp3, animate, transition
+  // Button click → mute YT, start mp3, animate, transition
   function handleClick() {
-    postYT('mute')          // silence YT BEFORE starting mp3
-    setMuted(true)
-    onAudioStart?.()        // start background mp3 within gesture context
+    postYT('mute')       // silence YT before starting mp3 — no audio overlap
+    onAudioStart?.()     // start background mp3 within gesture context
     setBtnAnim(true)
     setShowLottie(true)
     setTimeout(() => {
@@ -82,83 +78,86 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     }, 300)
   }
 
-  // ── Desktop CTA button ───────────────────────────────────────────────────
+  // ── Desktop CTA button ─────────────────────────────────────────────────────
   const desktopBtn = (
-    <button
-      onClick={handleClick}
-      disabled={!btnVisible || isExiting}
-      className={`relative px-10 py-4 text-cinema-gold border border-cinema-red/60 bg-cinema-deep/90
-        hover:bg-cinema-red/20 hover:border-cinema-gold/80 active:scale-95 transition-all duration-200
-        group btn-pulse-anim ${btnAnim ? 'btn-tap-anim' : ''}`}
-      style={{
-        clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
-        fontSize: 'clamp(0.95rem, 2.2vw, 1.15rem)',
-        letterSpacing: '0.08em',
-        fontWeight: 600,
-      }}
-    >
-      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(192,57,43,0.15), transparent)' }} />
-      <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
-      <span className="absolute bottom-0 left-[10%] right-[10%] h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ background: 'linear-gradient(90deg, transparent, #C9A227, transparent)' }} />
-    </button>
-  )
-
-  // ── Mobile CTA button (red + continuous pulse + Lottie click burst) ──────
-  const mobileBtn = (
-    <div className="relative flex items-center justify-center">
-      {/* Cursor-click Lottie burst on tap */}
-      {showLottie && lottieData && (
-        <div className="absolute pointer-events-none z-50"
-          style={{ width: 220, height: 220, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
-          <Lottie animationData={lottieData} loop={false} autoplay={true}
-            onComplete={() => setShowLottie(false)} />
-        </div>
-      )}
+    <div className="flex flex-col items-center gap-2">
+      <span className="hand-click-anim text-2xl select-none pointer-events-none">👆</span>
       <button
         onClick={handleClick}
         disabled={!btnVisible || isExiting}
-        className={`font-malayalam relative px-10 py-4 text-white btn-pulse-anim ${btnAnim ? 'btn-tap-anim' : ''}`}
+        className={`relative px-10 py-4 text-cinema-gold border border-cinema-red/60
+          bg-cinema-deep/90 hover:bg-cinema-red/20 hover:border-cinema-gold/80
+          active:scale-95 transition-all duration-200 group btn-pulse-anim
+          ${btnAnim ? 'btn-tap-anim' : ''}`}
         style={{
           clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
-          fontSize: 'clamp(1.05rem, 5vw, 1.25rem)',
+          fontSize: 'clamp(0.95rem, 2.2vw, 1.15rem)',
           letterSpacing: '0.08em',
-          fontWeight: 700,
-          fontStretch: 'condensed',
-          background: 'linear-gradient(135deg, #cc0000 0%, #8b0000 100%)',
-          border: '2px solid rgba(255,100,100,0.5)',
+          fontWeight: 600,
         }}
       >
+        <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(192,57,43,0.15), transparent)' }} />
         <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+        <span className="absolute bottom-0 left-[10%] right-[10%] h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ background: 'linear-gradient(90deg, transparent, #C9A227, transparent)' }} />
       </button>
     </div>
   )
 
+  // ── Mobile CTA button ──────────────────────────────────────────────────────
+  const mobileBtn = (
+    <div className="flex flex-col items-center gap-2">
+      <span className="hand-click-anim text-2xl select-none pointer-events-none">👆</span>
+      <div className="relative flex items-center justify-center">
+        {/* Cursor-click Lottie burst on tap */}
+        {showLottie && lottieData && (
+          <div className="absolute pointer-events-none z-50"
+            style={{ width: 220, height: 220, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
+            <Lottie animationData={lottieData} loop={false} autoplay={true}
+              onComplete={() => setShowLottie(false)} />
+          </div>
+        )}
+        <button
+          onClick={handleClick}
+          disabled={!btnVisible || isExiting}
+          className={`font-malayalam relative px-10 py-4 text-white btn-pulse-anim ${btnAnim ? 'btn-tap-anim' : ''}`}
+          style={{
+            clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
+            fontSize: 'clamp(1.05rem, 5vw, 1.25rem)',
+            letterSpacing: '0.08em',
+            fontWeight: 700,
+            fontStretch: 'condensed',
+            background: 'linear-gradient(135deg, #cc0000 0%, #8b0000 100%)',
+            border: '2px solid rgba(255,100,100,0.5)',
+          }}
+        >
+          <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+        </button>
+      </div>
+    </div>
+  )
+
   return (
-    <div
-      className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}
-      onPointerDown={handlePageTap}
-    >
+    <div className={`relative min-h-screen w-full overflow-hidden font-malayalam transition-opacity duration-700 ${isExiting ? 'opacity-0' : 'opacity-100'}`}>
 
       {/* ════════ DESKTOP (≥ 640 px) ════════ */}
       <div className="hidden sm:block">
 
-        {/* YouTube background — scaled to cover viewport like a video */}
+        {/* YouTube background scaled to cover viewport */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <iframe
             ref={desktopIframeRef}
             src={YT_SRC}
             title="intro"
             allow="autoplay; encrypted-media"
+            onLoad={handleIframeLoad}
             className="absolute"
             style={{
               top: '50%', left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '100vw',
-              height: '56.25vw',
-              minHeight: '100vh',
-              minWidth: '177.78vh',
+              width: '100vw', height: '56.25vw',
+              minHeight: '100vh', minWidth: '177.78vh',
               border: 'none',
             }}
           />
@@ -173,17 +172,9 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
         <div className="absolute top-[5%] right-[18%] w-[1.5px] h-[80%] pointer-events-none animate-lightning-2 z-20"
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(192,57,43,0.85) 50%, transparent 100%)', filter: 'blur(1px)' }} />
 
-        {/* Tap-to-unmute hint */}
-        {muted && (
-          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.75rem', color: '#fff', letterSpacing: '0.05em' }}>
-            <span>🔇</span> tap for audio
-          </div>
-        )}
-
         <div className={`absolute bottom-0 left-0 right-0 z-30 flex flex-col items-center pb-16 transition-all duration-700 ease-out ${btnVisible && !isExiting ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
           {desktopBtn}
-          <p className="mt-4 text-cinema-border/50 tracking-widest" style={{ fontSize: '0.7rem' }}>
+          <p className="mt-3 text-cinema-border/50 tracking-widest" style={{ fontSize: '0.7rem' }}>
             ▼ &nbsp; SCROLL TO EXPLORE &nbsp; ▼
           </p>
         </div>
@@ -192,14 +183,6 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
 
       {/* ════════ MOBILE (< 640 px) ════════ */}
       <div className="sm:hidden flex flex-col items-center justify-center min-h-screen relative gap-6 py-8">
-
-        {/* Tap-to-unmute hint */}
-        {muted && (
-          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full pointer-events-none"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.7rem', color: '#fff', letterSpacing: '0.05em' }}>
-            <span>🔇</span> tap for audio
-          </div>
-        )}
 
         {/* Speed-lines background */}
         <div className="absolute inset-0 z-0" style={{
@@ -250,6 +233,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
               src={YT_SRC}
               title="intro-mobile"
               allow="autoplay; encrypted-media"
+              onLoad={handleIframeLoad}
               className="w-full block"
               style={{ aspectRatio: '16/9', border: 'none' }}
             />
@@ -259,7 +243,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
         {/* CTA button */}
         <div className={`relative z-10 flex flex-col items-center transition-all duration-700 ease-out ${btnVisible && !isExiting ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}>
           {mobileBtn}
-          <p className="mt-4 text-cinema-border/40 tracking-widest" style={{ fontSize: '0.7rem' }}>
+          <p className="mt-3 text-cinema-border/40 tracking-widest" style={{ fontSize: '0.7rem' }}>
             ▼ &nbsp; SCROLL TO EXPLORE &nbsp; ▼
           </p>
         </div>
