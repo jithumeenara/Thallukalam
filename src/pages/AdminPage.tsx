@@ -115,6 +115,7 @@ interface EditModalProps {
 function EditModal({ card, onSave, onClose }: EditModalProps) {
   const [draft, setDraft] = useState<CardData>({ ...card })
   const [ytErr, setYtErr] = useState('')
+  const [useYtThumb, setUseYtThumb] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function set<K extends keyof CardData>(key: K, val: CardData[K]) {
@@ -198,13 +199,19 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
           <input
             type="text"
             value={draft.youtubeUrl}
-            onChange={e => { set('youtubeUrl', e.target.value); setYtErr('') }}
+            onChange={e => {
+              set('youtubeUrl', e.target.value)
+              setYtErr('')
+              // Auto-apply YouTube thumbnail if checkbox is on
+              const id = extractYouTubeId(e.target.value)
+              if (useYtThumb && id) set('thumbnail', `https://img.youtube.com/vi/${id}/maxresdefault.jpg`)
+            }}
             className="admin-input mb-1"
             placeholder="https://www.youtube.com/watch?v=..."
           />
           {ytErr && <p className="text-red-400 text-xs mb-2">{ytErr}</p>}
           {ytPreview && (
-            <div className="mb-4 mt-2 rounded overflow-hidden" style={{ aspectRatio: '16/9' }}>
+            <div className="mb-2 mt-2 rounded overflow-hidden" style={{ aspectRatio: '16/9' }}>
               <img
                 src={`https://img.youtube.com/vi/${ytPreview}/mqdefault.jpg`}
                 alt="YouTube thumbnail"
@@ -212,6 +219,26 @@ function EditModal({ card, onSave, onClose }: EditModalProps) {
               />
               <p className="text-green-400 text-xs mt-1">✓ Valid YouTube video</p>
             </div>
+          )}
+
+          {/* YouTube thumbnail checkbox */}
+          {ytPreview && (
+            <label className="flex items-center gap-2 mb-4 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={useYtThumb}
+                onChange={e => {
+                  setUseYtThumb(e.target.checked)
+                  if (e.target.checked && ytPreview) {
+                    set('thumbnail', `https://img.youtube.com/vi/${ytPreview}/maxresdefault.jpg`)
+                  }
+                }}
+                className="w-4 h-4 accent-yellow-500"
+              />
+              <span className="text-cinema-gold/80 text-sm group-hover:text-cinema-gold transition-colors">
+                Use YouTube thumbnail as card background
+              </span>
+            </label>
           )}
           {!ytPreview && <div className="mb-4" />}
 

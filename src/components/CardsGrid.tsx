@@ -217,7 +217,7 @@ export default function CardsGrid() {
   const [activeCard, setActiveCard] = useState<CardData | null>(null)
   const [headingVisible, setHeadingVisible] = useState(false)
 
-  // Fetch latest data from GitHub-backed JSON so all devices see admin updates
+  // Fetch latest from GitHub raw URL on every load — instant after admin saves
   useEffect(() => {
     fetchRemoteCards().then(remote => {
       if (remote) {

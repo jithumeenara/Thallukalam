@@ -42,13 +42,24 @@ export const GH_REPO     = 'Thallukalam'
 export const GH_FILE     = 'public/cards-data.json'
 export const GH_TOKEN_KEY = 'thallikalam_gh_token'
 
-/** Fetch the live cards-data.json served by Vercel (cache-busted) */
+/** Fetch the latest cards data — reads directly from GitHub raw (instant, no rebuild wait) */
 export async function fetchRemoteCards(): Promise<CardData[] | null> {
+  // Primary: GitHub raw URL — updates instantly after admin saves (no Vercel rebuild needed)
+  try {
+    const ghRaw = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/master/${GH_FILE}?t=${Date.now()}`
+    const res = await fetch(ghRaw)
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) return data
+    }
+  } catch {}
+  // Fallback: Vercel-served static file
   try {
     const res = await fetch(`/cards-data.json?t=${Date.now()}`)
-    if (!res.ok) return null
-    const data = await res.json()
-    if (Array.isArray(data) && data.length > 0) return data
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) return data
+    }
   } catch {}
   return null
 }
