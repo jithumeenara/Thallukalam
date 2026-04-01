@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import Lottie from 'lottie-react'
 
 interface Props {
   onEnter: () => void
@@ -6,10 +7,12 @@ interface Props {
 }
 
 export default function IntroPage({ onEnter, onAudioStart }: Props) {
-  const [btnVisible, setBtnVisible] = useState(false)
-  const [isExiting,  setIsExiting]  = useState(false)
-  const [btnAnim,    setBtnAnim]    = useState(false)
-  const [muted,      setMuted]      = useState(true)   // tracks whether video is muted
+  const [btnVisible,  setBtnVisible]  = useState(false)
+  const [isExiting,   setIsExiting]   = useState(false)
+  const [btnAnim,     setBtnAnim]     = useState(false)
+  const [muted,       setMuted]       = useState(true)
+  const [showLottie,  setShowLottie]  = useState(false)
+  const [lottieData,  setLottieData]  = useState<object | null>(null)
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef  = useRef<HTMLVideoElement>(null)
 
@@ -25,6 +28,14 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     mobileVideoRef.current?.play().catch(() => {})
   }, [])
 
+  // Pre-fetch Lottie animation JSON
+  useEffect(() => {
+    fetch('https://assets2.lottiefiles.com/packages/lf20_uu0x8lqv.json')
+      .then(r => r.json())
+      .then(setLottieData)
+      .catch(() => {})
+  }, [])
+
   // First tap anywhere on the page → unmute video
   function handlePageTap() {
     if (!muted) return
@@ -37,6 +48,7 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     handlePageTap()           // unmute if not already
     onAudioStart?.()          // start mp3 (within gesture context)
     setBtnAnim(true)
+    setShowLottie(true)       // trigger burst animation
     setTimeout(() => {
       desktopVideoRef.current?.pause()
       mobileVideoRef.current?.pause()
@@ -67,23 +79,39 @@ export default function IntroPage({ onEnter, onAudioStart }: Props) {
     </button>
   )
 
-  // ── Mobile CTA button (Anek Malayalam Condensed + tap animation) ─────────
+  // ── Mobile CTA button (vibrant orange-red + Lottie burst) ───────────────
   const mobileBtn = (
-    <button
-      onClick={handleClick}
-      disabled={!btnVisible || isExiting}
-      className={`font-malayalam relative px-10 py-4 text-cinema-gold border border-cinema-red/60 bg-cinema-deep/90 ${btnAnim ? 'btn-tap-anim' : ''}`}
-      style={{
-        clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
-        fontSize: 'clamp(1.05rem, 5vw, 1.25rem)',
-        letterSpacing: '0.08em',
-        fontWeight: 700,
-        fontStretch: 'condensed',
-        boxShadow: '0 0 24px rgba(201,162,39,0.3), 0 0 8px rgba(192,57,43,0.2)',
-      }}
-    >
-      <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
-    </button>
+    <div className="relative flex items-center justify-center">
+      {/* Lottie burst overlay */}
+      {showLottie && lottieData && (
+        <div className="absolute pointer-events-none z-50"
+          style={{ width: 220, height: 220, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
+          <Lottie
+            animationData={lottieData}
+            loop={false}
+            autoplay={true}
+            onComplete={() => setShowLottie(false)}
+          />
+        </div>
+      )}
+      <button
+        onClick={handleClick}
+        disabled={!btnVisible || isExiting}
+        className={`font-malayalam relative px-10 py-4 text-white ${btnAnim ? 'btn-tap-anim' : ''}`}
+        style={{
+          clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
+          fontSize: 'clamp(1.05rem, 5vw, 1.25rem)',
+          letterSpacing: '0.08em',
+          fontWeight: 700,
+          fontStretch: 'condensed',
+          background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+          border: '2px solid rgba(255,200,80,0.6)',
+          boxShadow: '0 0 28px rgba(249,115,22,0.7), 0 0 8px rgba(220,38,38,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
+        }}
+      >
+        <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+      </button>
+    </div>
   )
 
   return (
