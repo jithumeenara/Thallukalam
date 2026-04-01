@@ -193,7 +193,8 @@ html, body, #root {
   overflow: hidden;
 }
 
-.canvas-wrapper canvas {
+.canvas-wrapper canvas,
+.canvas-wrapper video {
   display: block;
   width: 100%;
   height: 100%;
@@ -361,8 +362,8 @@ html, body, #root {
     overflow: hidden;
   }
 
-  .canvas-wrapper canvas {
-    /* canvas pixel buffer is also 16:9 — fill means zero distortion, zero crop */
+  .canvas-wrapper canvas,
+  .canvas-wrapper video {
     object-fit: fill;
   }
 }
