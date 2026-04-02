@@ -226,7 +226,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               fetchPriority="high"
               draggable={false}
               style={{
-                width: 'min(31vw, 440px)',
+                width: 'min(36vw, 520px)',
                 filter:
                   'drop-shadow(0 0 30px rgba(201,162,39,0.72)) drop-shadow(0 8px 22px rgba(0,0,0,0.75))',
                 animation: visible
@@ -237,7 +237,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
           </div>
 
           <div
-            className={`mt-5 flex flex-col items-center transition-all duration-700 ease-out ${
+            className={`mt-10 flex flex-col items-center transition-all duration-700 ease-out ${
               btnReady ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
