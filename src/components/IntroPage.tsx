@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react'
+import { loadSocial, saveSocialLocal, type SocialLinks } from '../data/cards'
 
 const Lottie = lazy(() => import('lottie-react'))
 
@@ -17,9 +18,34 @@ const MOBILE_FRAME_INSET = {
 }
 const WAVE_BARS = [0, 1, 2, 3, 4, 5, 6]
 const CTA_WAVE_BARS = [0, 1, 2, 3, 4]
+const GH_SOCIAL = 'https://raw.githubusercontent.com/jithumeenara/Thallukalam/master/public/social-links.json'
 
 function getIsMobile() {
   return window.matchMedia('(max-width: 639px)').matches
+}
+
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+    </svg>
+  )
+}
+
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  )
+}
+
+function YoutubeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+  )
 }
 
 export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Props) {
@@ -31,6 +57,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
   const [unlockClosing, setUnlockClosing] = useState(false)
   const [isMobile, setIsMobile] = useState(getIsMobile)
   const [tapData, setTapData] = useState<object | null>(null)
+  const [social, setSocial] = useState<SocialLinks>(() => loadSocial())
 
   const touchStartYRef = useRef<number | null>(null)
   const enterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -65,6 +92,17 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
     fetch('/lottie/tap.json')
       .then((response) => response.json())
       .then(setTapData)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch(`${GH_SOCIAL}?t=${Date.now()}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data || typeof data !== 'object') return
+        setSocial(data as SocialLinks)
+        saveSocialLocal(data as SocialLinks)
+      })
       .catch(() => {})
   }, [])
 
@@ -109,6 +147,11 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
   }
 
   const ctaDisabled = !btnReady || !audioUnlocked || exiting
+  const socialLinks = [
+    { key: 'instagram', url: social.instagram, icon: <InstagramIcon />, label: 'Instagram', color: '#E1306C' },
+    { key: 'facebook', url: social.facebook, icon: <FacebookIcon />, label: 'Facebook', color: '#1877F2' },
+    { key: 'youtube', url: social.youtube, icon: <YoutubeIcon />, label: 'YouTube', color: '#FF0000' },
+  ].filter((item) => item.url)
 
   return (
     <div
@@ -156,8 +199,10 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
         }}
       />
 
-      <div className="hidden sm:flex relative z-10 h-full items-center justify-center px-6 py-10">
-        <div className="flex w-full max-w-3xl flex-col items-center gap-8 text-center">
+      <div className="hidden sm:block absolute inset-x-0 bottom-0 z-10">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#05080b]/95 via-[#05080b]/62 to-transparent" />
+
+        <div className="relative mx-auto flex w-full flex-col items-center px-6 pb-8 pt-24 text-center">
           <div
             className={`transition-all duration-700 ease-out ${
               visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
@@ -169,9 +214,9 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               fetchPriority="high"
               draggable={false}
               style={{
-                width: 'min(38vw, 520px)',
+                width: 'min(25vw, 360px)',
                 filter:
-                  'drop-shadow(0 0 34px rgba(201,162,39,0.72)) drop-shadow(0 8px 22px rgba(0,0,0,0.7))',
+                  'drop-shadow(0 0 30px rgba(201,162,39,0.72)) drop-shadow(0 8px 22px rgba(0,0,0,0.75))',
                 animation: visible
                   ? 'logo-dance 3s cubic-bezier(0.4,0,0.6,1) 0.9s infinite'
                   : 'none',
@@ -180,34 +225,32 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
           </div>
 
           <div
-            className={`flex flex-col items-center transition-all duration-700 ease-out ${
+            className={`mt-5 flex flex-col items-center transition-all duration-700 ease-out ${
               btnReady ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <div className="intro-cta-shell">
+            <div className="pointer-events-none mb-[-12px] h-[92px] w-[86px]">
+              {tapData && (
+                <Suspense fallback={<div className="h-[92px] w-[86px]" />}>
+                  <Lottie animationData={tapData} loop autoplay style={{ width: '100%', height: '100%' }} />
+                </Suspense>
+              )}
+            </div>
+
+            <div className="intro-desktop-cta-line">
               <div className="intro-cta-wave intro-cta-wave-left" aria-hidden="true">
                 {CTA_WAVE_BARS.map((bar) => (
                   <span key={`desktop-left-${bar}`} style={{ animationDelay: `${bar * 0.12}s` }} />
                 ))}
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="pointer-events-none mb-[-12px] h-[92px] w-[86px]">
-                  {tapData && (
-                    <Suspense fallback={<div className="h-[92px] w-[86px]" />}>
-                      <Lottie animationData={tapData} loop autoplay style={{ width: '100%', height: '100%' }} />
-                    </Suspense>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleEnter}
-                  disabled={ctaDisabled}
-                  className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
-                </button>
-              </div>
+              <button
+                onClick={handleEnter}
+                disabled={ctaDisabled}
+                className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+              </button>
 
               <div className="intro-cta-wave intro-cta-wave-right" aria-hidden="true">
                 {CTA_WAVE_BARS.map((bar) => (
@@ -219,19 +262,29 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
         </div>
       </div>
 
-      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-1 pt-1 pb-4">
+      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-0 pt-0 pb-4">
         <div
-          className={`w-[calc(100vw-0.35rem)] max-w-none transition-all duration-700 ease-out ${
+          className={`intro-mobile-frame-wrap w-full transition-all duration-700 ease-out ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          <div className="relative mx-auto" style={{ aspectRatio: '1969 / 1634' }}>
+          <div
+            className="intro-mobile-frame-shell relative mx-auto -translate-y-3"
+            style={{ width: 'min(118vw, 640px)', aspectRatio: '1969 / 1634' }}
+          >
+            <img
+              src="/PHOL.png"
+              alt=""
+              aria-hidden="true"
+              className="intro-mobile-frame-blur absolute inset-0 h-full w-full object-contain pointer-events-none select-none"
+              draggable={false}
+            />
             <div
-              className="absolute overflow-hidden bg-black"
+              className="intro-mobile-video-window absolute overflow-hidden bg-black"
               style={MOBILE_FRAME_INSET}
             >
               <video
-                className="h-full w-full object-cover"
+                className="h-full w-full scale-[1.015] object-cover"
                 src={LANDING_VIDEO_SRC}
                 autoPlay
                 loop
@@ -253,11 +306,11 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
         </div>
 
         <div
-          className={`-mt-2 flex flex-col items-center transition-all duration-700 ease-out ${
+          className={`-mt-12 flex flex-col items-center transition-all duration-700 ease-out ${
             btnReady ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          <div className="intro-cta-shell">
+          <div className="intro-cta-shell intro-mobile-cta-shell">
             <div className="intro-cta-wave intro-cta-wave-left" aria-hidden="true">
               {CTA_WAVE_BARS.map((bar) => (
                 <span key={`mobile-left-${bar}`} style={{ animationDelay: `${bar * 0.12}s` }} />
@@ -288,6 +341,24 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               ))}
             </div>
           </div>
+
+          {socialLinks.length > 0 && (
+            <div className="intro-mobile-social-row">
+              {socialLinks.map((item) => (
+                <a
+                  key={item.key}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={item.label}
+                  className="intro-mobile-social-btn"
+                  style={{ ['--intro-social-color' as string]: item.color }}
+                >
+                  {item.icon}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
