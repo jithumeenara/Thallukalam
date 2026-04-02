@@ -14,18 +14,18 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [isMuted,   setIsMuted]   = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioUnlockedRef = useRef(false)
 
   // Create audio once; reuse across StrictMode double-invoke
   useEffect(() => {
     if (IS_ADMIN) return
     if (!audioRef.current) {
       const a = new Audio('/Audio/background_audio.mp3')
+      a.preload = 'auto'
       a.loop   = true
       a.volume = 0.35
       audioRef.current = a
     }
-    // Auto-play attempt (succeeds on desktop / return visitors)
-    audioRef.current.play().catch(() => {})
     return () => { audioRef.current?.pause() }
   }, [])
 
@@ -48,7 +48,26 @@ export default function App() {
   function handleAudioStart() {
     const audio = audioRef.current
     if (!audio) return
-    audio.play().catch(() => {})
+    audio.volume = 0.35
+    audio.muted = isMuted
+    if (audio.paused) {
+      audio.play().catch(() => {})
+    }
+  }
+
+  function handleAudioUnlock() {
+    if (audioUnlockedRef.current) return
+    audioUnlockedRef.current = true
+
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.muted = isMuted
+    audio.volume = 0.35
+    audio.currentTime = 0
+
+    audio.play()
+      .catch(() => {})
   }
 
   function handleToggleMute() {
@@ -64,13 +83,14 @@ export default function App() {
       {showIntro && (
         <IntroPage
           onEnter={() => setShowIntro(false)}
+          onAudioUnlock={handleAudioUnlock}
           onAudioStart={handleAudioStart}
         />
       )}
 
       {/* Main site — always mounted so HeroSection video starts loading immediately */}
       <div className="min-h-screen bg-cinema-bg font-malayalam">
-        <VolumeButton isMuted={isMuted} onToggle={handleToggleMute} />
+        {!showIntro && <VolumeButton isMuted={isMuted} onToggle={handleToggleMute} />}
         <HeroSection />
         <Suspense fallback={null}><CardsGrid /></Suspense>
         <Suspense fallback={null}><ScrollingBanner /></Suspense>
