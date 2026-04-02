@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type TouchEvent } from 'react'
 import { loadSocial, saveSocialLocal, type SocialLinks } from '../data/cards'
+import VisitCounter from './VisitCounter'
 
 interface Props {
   onEnter: () => void
@@ -263,6 +264,18 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               </div>
             </div>
           </div>
+
+          <div
+            className={`absolute transition-all duration-700 ease-out ${
+              btnReady ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            }`}
+            style={{
+              right: 'clamp(24px, 4vw, 72px)',
+              bottom: 'clamp(18px, 3vh, 34px)',
+            }}
+          >
+            <VisitCounter variant="desktop" />
+          </div>
         </div>
       </div>
 
@@ -343,6 +356,10 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               ))}
             </div>
           )}
+
+          <div className="mt-7 w-full px-4">
+            <VisitCounter variant="mobile" />
+          </div>
         </div>
 
         <div className="intro-mobile-bottom-wave-rail" aria-hidden="true">
