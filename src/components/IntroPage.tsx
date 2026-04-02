@@ -1,7 +1,5 @@
-import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react'
+import { useEffect, useRef, useState, type TouchEvent } from 'react'
 import { loadSocial, saveSocialLocal, type SocialLinks } from '../data/cards'
-
-const Lottie = lazy(() => import('lottie-react'))
 
 interface Props {
   onEnter: () => void
@@ -11,13 +9,14 @@ interface Props {
 
 const LANDING_VIDEO_SRC = '/Landing/landing.mp4'
 const MOBILE_FRAME_INSET = {
-  top: '19.8%',
-  right: '24.2%',
-  bottom: '32.9%',
-  left: '24.2%',
+  top: '25.8%',
+  right: '25.1%',
+  bottom: '30.8%',
+  left: '25.6%',
 }
 const WAVE_BARS = [0, 1, 2, 3, 4, 5, 6]
 const CTA_WAVE_BARS = [0, 1, 2, 3, 4]
+const CTA_RIPPLES = [1, 2, 3]
 const MOBILE_BOTTOM_WAVE_BARS = [
   14, 22, 34, 18, 12, 28, 42, 24, 16, 30, 20, 36,
   18, 26, 40, 22, 14, 32, 20, 38, 24, 16, 28,
@@ -60,7 +59,6 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
   const [showUnlockOverlay, setShowUnlockOverlay] = useState(true)
   const [unlockClosing, setUnlockClosing] = useState(false)
   const [isMobile, setIsMobile] = useState(getIsMobile)
-  const [tapData, setTapData] = useState<object | null>(null)
   const [social, setSocial] = useState<SocialLinks>(() => loadSocial())
 
   const touchStartYRef = useRef<number | null>(null)
@@ -91,28 +89,6 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
     media.addListener(syncMobileState)
     return () => media.removeListener(syncMobileState)
   }, [])
-
-  useEffect(() => {
-    let cancelled = false
-    setTapData(null)
-
-    if (isMobile) {
-      return () => {
-        cancelled = true
-      }
-    }
-
-    fetch('/lottie/tap.json')
-      .then((response) => response.json())
-      .then((data) => {
-        if (!cancelled) setTapData(data)
-      })
-      .catch(() => {})
-
-    return () => {
-      cancelled = true
-    }
-  }, [isMobile])
 
   useEffect(() => {
     fetch(`${GH_SOCIAL}?t=${Date.now()}`)
@@ -171,6 +147,23 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
     { key: 'facebook', url: social.facebook, icon: <FacebookIcon />, label: 'Facebook', color: '#1877F2' },
     { key: 'youtube', url: social.youtube, icon: <YoutubeIcon />, label: 'YouTube', color: '#FF0000' },
   ].filter((item) => item.url)
+
+  function renderCtaInner() {
+    return (
+      <>
+        <span className="intro-cta-btn-main">
+          <span className="intro-cta-btn-text">ആ കാലത്തിലേക്ക് പോകാം</span>
+          <span className="intro-cta-indicator" aria-hidden="true">{'>>>'}</span>
+        </span>
+
+        {CTA_RIPPLES.map((ripple) => (
+          <span key={ripple} className={`intro-cta-ripple intro-cta-ripple-${ripple}`} aria-hidden="true" />
+        ))}
+
+        <span className="intro-cta-hand" aria-hidden="true">👆</span>
+      </>
+    )
+  }
 
   return (
     <div
@@ -233,7 +226,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               fetchPriority="high"
               draggable={false}
               style={{
-                width: 'min(25vw, 360px)',
+                width: 'min(31vw, 440px)',
                 filter:
                   'drop-shadow(0 0 30px rgba(201,162,39,0.72)) drop-shadow(0 8px 22px rgba(0,0,0,0.75))',
                 animation: visible
@@ -248,14 +241,6 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               btnReady ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <div className="intro-desktop-touch-wrap pointer-events-none" aria-hidden="true">
-              {tapData && (
-                <Suspense fallback={<div className="intro-desktop-touch-lottie" />}>
-                  <Lottie animationData={tapData} loop autoplay className="intro-desktop-touch-lottie" />
-                </Suspense>
-              )}
-            </div>
-
             <div className="intro-desktop-cta-line">
               <div className="intro-cta-wave intro-cta-wave-left" aria-hidden="true">
                 {CTA_WAVE_BARS.map((bar) => (
@@ -266,12 +251,9 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               <button
                 onClick={handleEnter}
                 disabled={ctaDisabled}
-                className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
+                className="intro-cta-btn font-malayalam relative disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="relative z-10 flex items-center gap-3">
-                  <span>ആ കാലത്തിലേക്ക് പോകാം</span>
-                  <span className="intro-cta-indicator" aria-hidden="true">{'>>>'}</span>
-                </span>
+                {renderCtaInner()}
               </button>
 
               <div className="intro-cta-wave intro-cta-wave-right" aria-hidden="true">
@@ -284,14 +266,14 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
         </div>
       </div>
 
-      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-0 pt-0 pb-28">
+      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-0 pt-6 pb-28">
         <div
           className={`intro-mobile-frame-wrap w-full transition-all duration-700 ease-out ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
           <div
-            className="intro-mobile-frame-shell relative mx-auto -translate-y-3"
+            className="intro-mobile-frame-shell relative mx-auto"
             style={{ width: 'min(118vw, 640px)', aspectRatio: '1969 / 1634' }}
           >
             <img
@@ -306,7 +288,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               style={MOBILE_FRAME_INSET}
             >
               <video
-                className="h-full w-full scale-[1.015] object-cover"
+                className="h-full w-full object-cover object-center"
                 src={LANDING_VIDEO_SRC}
                 autoPlay
                 loop
@@ -337,12 +319,9 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               <button
                 onClick={handleEnter}
                 disabled={ctaDisabled}
-                className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
+                className="intro-cta-btn font-malayalam relative disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="relative z-10 flex items-center gap-3">
-                  <span>ആ കാലത്തിലേക്ക് പോകാം</span>
-                  <span className="intro-cta-indicator" aria-hidden="true">{'>>>'}</span>
-                </span>
+                {renderCtaInner()}
               </button>
             </div>
           </div>
