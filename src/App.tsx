@@ -16,13 +16,18 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Create audio; try autoplay, unlock on first click if browser blocks it
+  // Create audio; try autoplay, unlock on first click if browser blocks it.
+  // Guard against React StrictMode double-invoke: reuse existing instance
+  // instead of creating a new Audio() (which causes a duplicate network fetch).
   useEffect(() => {
     if (IS_ADMIN) return
-    const audio = new Audio('/Audio/background_audio.mp3')
-    audio.loop   = true
-    audio.volume = 0.35
-    audioRef.current = audio
+    if (!audioRef.current) {
+      const a = new Audio('/Audio/background_audio.mp3')
+      a.loop   = true
+      a.volume = 0.35
+      audioRef.current = a
+    }
+    const audio = audioRef.current
     audio.play().catch(() => {
       function unlock() { audio.play().catch(() => {}) }
       document.addEventListener('click', unlock, { once: true })

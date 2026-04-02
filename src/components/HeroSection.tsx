@@ -27,10 +27,12 @@ export default function HeroSection() {
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    // preload="auto" already starts fetching — never call video.load() here,
+    // that resets the request and causes a duplicate network fetch.
+    if (video.readyState >= 3) { setReady(true); return }  // already buffered
     const done = () => setReady(true)
     video.addEventListener('canplay', done)
     video.addEventListener('error',   done)
-    video.load()
     return () => {
       video.removeEventListener('canplay', done)
       video.removeEventListener('error',   done)
