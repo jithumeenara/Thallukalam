@@ -178,23 +178,6 @@ html, body, #root {
   pointer-events: none;
 }
 
-/* ─── Loading bar ─── */
-.loading-bar-track {
-  width: 280px;
-  height: 3px;
-  background: rgba(201, 162, 39, 0.15);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.loading-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #8B1A1A, #C9A227, #F0C040);
-  border-radius: 2px;
-  transition: width 0.12s linear;
-  box-shadow: 0 0 10px 2px rgba(240, 192, 64, 0.55);
-}
-
 /* ─── Canvas wrapper ─── */
 .canvas-wrapper {
   position: absolute;
@@ -202,7 +185,6 @@ html, body, #root {
   overflow: hidden;
 }
 
-.canvas-wrapper canvas,
 .canvas-wrapper video {
   display: block;
   width: 100%;
@@ -360,7 +342,6 @@ html, body, #root {
     overflow: hidden;
   }
 
-  .canvas-wrapper canvas,
   .canvas-wrapper video {
     object-fit: fill;
   }
