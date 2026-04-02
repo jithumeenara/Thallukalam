@@ -18,6 +18,10 @@ const MOBILE_FRAME_INSET = {
 }
 const WAVE_BARS = [0, 1, 2, 3, 4, 5, 6]
 const CTA_WAVE_BARS = [0, 1, 2, 3, 4]
+const MOBILE_BOTTOM_WAVE_BARS = [
+  14, 22, 34, 18, 12, 28, 42, 24, 16, 30, 20, 36,
+  18, 26, 40, 22, 14, 32, 20, 38, 24, 16, 28,
+]
 const GH_SOCIAL = 'https://raw.githubusercontent.com/jithumeenara/Thallukalam/master/public/social-links.json'
 
 function getIsMobile() {
@@ -89,11 +93,26 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+    setTapData(null)
+
+    if (isMobile) {
+      return () => {
+        cancelled = true
+      }
+    }
+
     fetch('/lottie/tap.json')
       .then((response) => response.json())
-      .then(setTapData)
+      .then((data) => {
+        if (!cancelled) setTapData(data)
+      })
       .catch(() => {})
-  }, [])
+
+    return () => {
+      cancelled = true
+    }
+  }, [isMobile])
 
   useEffect(() => {
     fetch(`${GH_SOCIAL}?t=${Date.now()}`)
@@ -229,10 +248,10 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               btnReady ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <div className="pointer-events-none mb-[-12px] h-[92px] w-[86px]">
+            <div className="intro-desktop-touch-wrap pointer-events-none" aria-hidden="true">
               {tapData && (
-                <Suspense fallback={<div className="h-[92px] w-[86px]" />}>
-                  <Lottie animationData={tapData} loop autoplay style={{ width: '100%', height: '100%' }} />
+                <Suspense fallback={<div className="intro-desktop-touch-lottie" />}>
+                  <Lottie animationData={tapData} loop autoplay className="intro-desktop-touch-lottie" />
                 </Suspense>
               )}
             </div>
@@ -249,7 +268,10 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
                 disabled={ctaDisabled}
                 className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+                <span className="relative z-10 flex items-center gap-3">
+                  <span>ആ കാലത്തിലേക്ക് പോകാം</span>
+                  <span className="intro-cta-indicator" aria-hidden="true">{'>>>'}</span>
+                </span>
               </button>
 
               <div className="intro-cta-wave intro-cta-wave-right" aria-hidden="true">
@@ -262,7 +284,7 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
         </div>
       </div>
 
-      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-0 pt-0 pb-4">
+      <div className="sm:hidden relative z-10 flex h-full flex-col items-center px-0 pt-0 pb-28">
         <div
           className={`intro-mobile-frame-wrap w-full transition-all duration-700 ease-out ${
             visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
@@ -311,34 +333,17 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
           }`}
         >
           <div className="intro-cta-shell intro-mobile-cta-shell">
-            <div className="intro-cta-wave intro-cta-wave-left" aria-hidden="true">
-              {CTA_WAVE_BARS.map((bar) => (
-                <span key={`mobile-left-${bar}`} style={{ animationDelay: `${bar * 0.12}s` }} />
-              ))}
-            </div>
-
             <div className="flex flex-col items-center">
-              <div className="pointer-events-none mb-[-12px] h-[84px] w-[78px]">
-                {tapData && (
-                  <Suspense fallback={<div className="h-[84px] w-[78px]" />}>
-                    <Lottie animationData={tapData} loop autoplay style={{ width: '100%', height: '100%' }} />
-                  </Suspense>
-                )}
-              </div>
-
               <button
                 onClick={handleEnter}
                 disabled={ctaDisabled}
                 className="intro-cta-btn font-malayalam relative overflow-hidden disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="relative z-10">ആ കാലത്തിലേക്ക് പോകാം</span>
+                <span className="relative z-10 flex items-center gap-3">
+                  <span>ആ കാലത്തിലേക്ക് പോകാം</span>
+                  <span className="intro-cta-indicator" aria-hidden="true">{'>>>'}</span>
+                </span>
               </button>
-            </div>
-
-            <div className="intro-cta-wave intro-cta-wave-right" aria-hidden="true">
-              {CTA_WAVE_BARS.map((bar) => (
-                <span key={`mobile-right-${bar}`} style={{ animationDelay: `${bar * 0.12 + 0.18}s` }} />
-              ))}
             </div>
           </div>
 
@@ -359,6 +364,20 @@ export default function IntroPage({ onEnter, onAudioStart, onAudioUnlock }: Prop
               ))}
             </div>
           )}
+        </div>
+
+        <div className="intro-mobile-bottom-wave-rail" aria-hidden="true">
+          <div className="intro-mobile-bottom-wave">
+            {MOBILE_BOTTOM_WAVE_BARS.map((height, index) => (
+              <span
+                key={`mobile-bottom-wave-${index}`}
+                style={{
+                  ['--intro-mobile-wave-height' as string]: `${height}px`,
+                  animationDelay: `${(index % 8) * 0.11}s`,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import { loadCards, fetchRemoteCards, saveCardsLocal, extractYouTubeId, CardData } from '../data/cards'
+import { useEffect, useRef, useState } from 'react'
+import { CardData, extractYouTubeId, fetchRemoteCards, loadCards, saveCardsLocal } from '../data/cards'
 
-// Crack SVG paths
 function CrackSvg({ color, accentRgb }: { color: string; accentRgb: string }) {
   return (
-    <svg className="crack-svg w-full h-full" viewBox="0 0 400 55" fill="none" preserveAspectRatio="none" style={{ color }}>
+    <svg className="crack-svg h-full w-full" viewBox="0 0 400 55" fill="none" preserveAspectRatio="none" style={{ color }}>
       <path d="M200,2 L184,16 L193,14 L174,38 L186,34 L165,55" stroke={`rgba(${accentRgb},0.9)`} strokeWidth="1.8" />
       <path d="M200,2 L216,16 L207,14 L226,38 L214,34 L235,55" stroke={`rgba(${accentRgb},0.9)`} strokeWidth="1.8" />
       <path d="M184,12 L165,26 L175,24 L152,48" stroke={`rgba(${accentRgb},0.65)`} strokeWidth="1.2" />
@@ -17,7 +16,6 @@ function CrackSvg({ color, accentRgb }: { color: string; accentRgb: string }) {
   )
 }
 
-// ── YouTube Video Popup ────────────────────────────────────────────────────
 function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => void }) {
   const [closing, setClosing] = useState(false)
   const youtubeId = card ? extractYouTubeId(card.youtubeUrl) : null
@@ -28,14 +26,15 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
   }
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close()
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    // Mute background audio while video is open
     window.dispatchEvent(new CustomEvent('thallikalam:videoplaying', { detail: true }))
     return () => {
       document.body.style.overflow = ''
@@ -46,15 +45,8 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
   if (!card) return null
 
   return (
-    <div
-      className={`modal-backdrop font-malayalam${closing ? ' closing' : ''}`}
-      onClick={close}
-    >
-      <div
-        className={`modal-box${closing ? ' closing' : ''}`}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Accent top bar */}
+    <div className={`modal-backdrop font-malayalam${closing ? ' closing' : ''}`} onClick={close}>
+      <div className={`modal-box${closing ? ' closing' : ''}`} onClick={(event) => event.stopPropagation()}>
         <div
           className="modal-top-bar"
           style={{
@@ -62,23 +54,25 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
           }}
         />
 
-        {/* Close */}
-        <button className="modal-close-btn" onClick={close} aria-label="Close">✕</button>
+        <button className="modal-close-btn" onClick={close} aria-label="Close">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M5 5L15 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
 
-        {/* Header */}
         <div className="modal-header">
           <span className="text-2xl leading-none">{card.icon}</span>
           <div>
-            <p className="text-[0.65rem] tracking-[0.22em] uppercase mb-0.5" style={{ color: card.accentColor }}>
+            <p className="mb-0.5 text-[0.65rem] uppercase tracking-[0.22em]" style={{ color: card.accentColor }}>
               {card.title}
             </p>
-            <h2 className="font-semibold text-[#e0d5b8] leading-snug" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
+            <h2 className="font-semibold leading-snug text-[#e0d5b8]" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
               {card.subtitle}
             </h2>
           </div>
         </div>
 
-        {/* Video area */}
         <div className="modal-video-wrap">
           {youtubeId ? (
             <iframe
@@ -88,13 +82,13 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
               style={{ border: 0 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              className="w-full h-full"
+              className="h-full w-full"
             />
           ) : (
             <div className="modal-video-placeholder">
               <span className="text-4xl opacity-40">{card.icon}</span>
-              <p className="text-cinema-gold/40 text-sm tracking-widest uppercase">വീഡിയോ ഉടൻ വരുന്നു</p>
-              <p className="text-cinema-border/30 text-xs">Coming Soon</p>
+              <p className="text-sm uppercase tracking-widest text-cinema-gold/40">വീഡിയോ ഉടൻ വരുന്നു</p>
+              <p className="text-xs text-cinema-border/30">Coming Soon</p>
             </div>
           )}
         </div>
@@ -108,7 +102,6 @@ function VideoModal({ card, onClose }: { card: CardData | null; onClose: () => v
   )
 }
 
-// ── Card ──────────────────────────────────────────────────────────────────
 interface CardProps {
   card: CardData
   index: number
@@ -122,17 +115,27 @@ function Card({ card, index, onOpen }: CardProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = wrapRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+    const element = wrapRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
       { threshold: 0.1 }
     )
-    obs.observe(el)
-    return () => obs.disconnect()
+
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [])
 
-  function handleMouseEnter() { setHovered(true); setCrackKey(k => k + 1) }
+  function handleMouseEnter() {
+    setHovered(true)
+    setCrackKey((key) => key + 1)
+  }
 
   return (
     <div
@@ -143,9 +146,8 @@ function Card({ card, index, onOpen }: CardProps) {
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(card)}
     >
-      {/* Inner card */}
       <div
-        className={`relative overflow-hidden cursor-pointer select-none border transition-all duration-300 ease-out ${hovered ? 'card-active scale-[1.03]' : 'scale-100'}`}
+        className={`relative cursor-pointer overflow-hidden border select-none transition-all duration-300 ease-out ${hovered ? 'card-active scale-[1.03]' : 'scale-100'}`}
         style={{
           minHeight: '200px',
           borderColor: hovered ? `rgba(${card.accentRgb},0.65)` : 'rgba(42,48,64,0.45)',
@@ -157,21 +159,27 @@ function Card({ card, index, onOpen }: CardProps) {
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 card-bg-overlay transition-opacity duration-300" style={{ opacity: hovered ? 0.78 : 0.88 }} />
+        <div className="card-bg-overlay absolute inset-0 transition-opacity duration-300" style={{ opacity: hovered ? 0.78 : 0.88 }} />
         <div className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ opacity: hovered ? 1 : 0, background: `radial-gradient(ellipse at 30% 45%, rgba(${card.accentRgb},0.2) 0%, transparent 60%)` }} />
-        <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none transition-all duration-300" style={{ background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`, opacity: hovered ? 1 : 0.4, boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none' }} />
+        <div className="absolute left-0 right-0 top-0 h-[2px] pointer-events-none transition-all duration-300" style={{ background: `linear-gradient(90deg, transparent 0%, ${card.accentColor} 50%, transparent 100%)`, opacity: hovered ? 1 : 0.4, boxShadow: hovered ? `0 0 16px 4px rgba(${card.accentRgb},0.7)` : 'none' }} />
         <div className="scanline-overlay opacity-25" />
 
-        {/* Icon — absolute top-left */}
         <div
-          className="absolute top-4 left-4 z-10 text-[2.4rem] leading-none transition-all duration-300 ease-out"
+          className="absolute left-4 top-4 z-10 text-[2.4rem] leading-none transition-all duration-300 ease-out"
           style={{ transform: hovered ? 'scale(1.25) rotate(-10deg)' : 'scale(1) rotate(0deg)' }}
           aria-hidden="true"
         >
           {card.icon}
         </div>
 
-        {/* Text — absolute bottom-left */}
+        <div className="card-play-overlay pointer-events-none">
+          <div className={`card-play-btn${hovered ? ' active' : ''}`}>
+            <svg className="card-play-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M18 14.5V33.5L33 24L18 14.5Z" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
+
         <div className="absolute bottom-5 left-5 right-5 z-10 font-malayalam">
           <h3
             className="font-malayalam font-black leading-tight text-[#f0e8cc]"
@@ -185,37 +193,29 @@ function Card({ card, index, onOpen }: CardProps) {
           </h3>
           {card.title2 && (
             <p
-              className="font-malayalam font-bold leading-snug mt-0.5 text-[#e8dbb0]"
+              className="mt-0.5 font-malayalam font-bold leading-snug text-[#e8dbb0]"
               style={{ fontSize: 'clamp(0.95rem, 3vw, 1.2rem)', textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
             >
               {card.title2}
             </p>
           )}
           <p
-            className="font-malayalam font-semibold leading-snug mt-1 transition-colors duration-300"
+            className="mt-1 font-malayalam font-semibold leading-snug transition-colors duration-300"
             style={{ fontSize: 'clamp(0.85rem, 2.6vw, 1.05rem)', color: hovered ? card.accentColor : 'rgba(201,162,39,0.85)' }}
           >
             {card.subtitle}
           </p>
         </div>
 
-        {/* Bottom accent line */}
         <div
-          className="absolute bottom-0 left-0 h-[3px] transition-all duration-500 ease-out pointer-events-none z-10"
+          className="absolute bottom-0 left-0 z-10 h-[3px] pointer-events-none transition-all duration-500 ease-out"
           style={{ width: hovered ? '100%' : '0%', background: `linear-gradient(90deg, ${card.accentColor}, transparent)`, boxShadow: hovered ? `0 0 8px 2px rgba(${card.accentRgb},0.5)` : 'none' }}
         />
-
-        {/* Play hint */}
-        <div className={`card-play-hint font-malayalam${hovered ? ' visible' : ''}`}>
-          <span>▶</span>
-          <span>കാണുക</span>
-        </div>
       </div>
 
-      {/* Crack */}
       <div
         key={crackKey}
-        className={`absolute bottom-0 left-0 right-0 h-8 pointer-events-none overflow-visible ${hovered ? 'crack-active' : ''}`}
+        className={`absolute bottom-0 left-0 right-0 h-8 overflow-visible pointer-events-none ${hovered ? 'crack-active' : ''}`}
         style={{ opacity: hovered ? 1 : 0, transition: hovered ? 'none' : 'opacity 0.3s ease', zIndex: 30 }}
       >
         <CrackSvg color={card.accentColor} accentRgb={card.accentRgb} />
@@ -224,77 +224,83 @@ function Card({ card, index, onOpen }: CardProps) {
   )
 }
 
-// ── CardsGrid ─────────────────────────────────────────────────────────────
 export default function CardsGrid() {
   const [cards, setCards] = useState<CardData[]>(() => loadCards())
   const [activeCard, setActiveCard] = useState<CardData | null>(null)
   const [headingVisible, setHeadingVisible] = useState(false)
+  const headingRef = useRef<HTMLDivElement>(null)
 
-  // Fetch latest from GitHub raw URL on every load — instant after admin saves
   useEffect(() => {
-    fetchRemoteCards().then(remote => {
+    fetchRemoteCards().then((remote) => {
       if (remote) {
         setCards(remote)
         saveCardsLocal(remote)
       }
     })
   }, [])
-  const headingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = headingRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setHeadingVisible(true); obs.disconnect() } },
+    const element = headingRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHeadingVisible(true)
+          observer.disconnect()
+        }
+      },
       { threshold: 0.2 }
     )
-    obs.observe(el)
-    return () => obs.disconnect()
+
+    observer.observe(element)
+    return () => observer.disconnect()
   }, [])
 
   return (
     <>
-      <section className="relative pt-4 sm:pt-20 pb-20 px-3 sm:px-6 bg-cinema-deep font-malayalam overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-8 sm:h-24 bg-gradient-to-b from-cinema-bg to-cinema-deep pointer-events-none z-10" />
+      <section className="relative overflow-hidden bg-cinema-deep px-3 pb-20 pt-4 font-malayalam sm:px-6 sm:pt-20">
+        <div className="absolute left-0 right-0 top-0 z-10 h-8 bg-gradient-to-b from-cinema-bg to-cinema-deep pointer-events-none sm:h-24" />
         <div className="noise-overlay opacity-[0.025]" />
 
         <div className="relative z-10 w-full">
-          {/* Heading */}
-          <div
-            ref={headingRef}
-            className={`text-center mb-6 sm:mb-12 ${headingVisible ? 'heading-in-view' : 'heading-hidden'}`}
-          >
-            <div className="flex items-center justify-center gap-4 mb-5">
-              <div className="w-16 sm:w-28 gold-line" />
-              <div className="w-2.5 h-2.5 rotate-45 bg-cinema-red" style={{ boxShadow: '0 0 10px 3px rgba(139,26,26,0.6)' }} />
-              <div className="w-16 sm:w-28 gold-line" />
+          <div ref={headingRef} className={`mb-6 text-center sm:mb-12 ${headingVisible ? 'heading-in-view' : 'heading-hidden'}`}>
+            <div className="mb-5 flex items-center justify-center gap-4">
+              <div className="gold-line w-16 sm:w-28" />
+              <div className="h-2.5 w-2.5 rotate-45 bg-cinema-red" style={{ boxShadow: '0 0 10px 3px rgba(139,26,26,0.6)' }} />
+              <div className="gold-line w-16 sm:w-28" />
             </div>
-            <p className="font-malayalam text-[clamp(1rem,2.2vw,1.3rem)] tracking-wider" style={{ color: 'rgba(201,162,39,0.75)', fontWeight: 500 }}>
+            <p
+              className="font-malayalam text-[clamp(1rem,2.2vw,1.3rem)] tracking-wider"
+              style={{
+                color: 'rgba(201,162,39,0.75)',
+                fontFamily: '"Anek Malayalam Variable", sans-serif',
+                fontStretch: 'condensed',
+                fontVariationSettings: '"wdth" 75',
+                fontWeight: 500,
+              }}
+            >
               തമ്മിൽ തല്ലി നാട് കുട്ടിച്ചോറാക്കിയ കാലം
             </p>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5" style={{ paddingBottom: '1rem' }}>
-            {cards.map((card, i) => (
-              <Card key={card.id} card={card} index={i} onOpen={setActiveCard} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5" style={{ paddingBottom: '1rem' }}>
+            {cards.map((card, index) => (
+              <Card key={card.id} card={card} index={index} onOpen={setActiveCard} />
             ))}
           </div>
 
-          {/* Bottom separator */}
-          <div className="mt-12 flex items-center gap-4 justify-center opacity-30">
-            <div className="flex-1 max-w-xs gold-line" />
-            <div className="w-1.5 h-1.5 rotate-45 bg-cinema-gold/50" />
-            <div className="flex-1 max-w-xs gold-line" />
+          <div className="mt-12 flex items-center justify-center gap-4 opacity-30">
+            <div className="gold-line max-w-xs flex-1" />
+            <div className="h-1.5 w-1.5 rotate-45 bg-cinema-gold/50" />
+            <div className="gold-line max-w-xs flex-1" />
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-cinema-bg to-cinema-deep pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-24 bg-gradient-to-t from-cinema-bg to-cinema-deep pointer-events-none" />
       </section>
 
-      {activeCard && (
-        <VideoModal card={activeCard} onClose={() => setActiveCard(null)} />
-      )}
+      {activeCard && <VideoModal card={activeCard} onClose={() => setActiveCard(null)} />}
     </>
   )
 }

@@ -28,7 +28,9 @@ html, body, #root {
 
 /* ─── Anek Malayalam Variable — force condensed width axis everywhere ─── */
 .font-malayalam {
+  font-family: 'Anek Malayalam Variable', sans-serif;
   font-stretch: condensed;   /* = 75% on the wdth axis */
+  font-variation-settings: 'wdth' 75;
 }
 
 /* ─── Admin panel shared styles ─── */
@@ -221,6 +223,23 @@ html, body, #root {
   animation: intro-btn-glow 2s ease-in-out infinite;
 }
 
+.intro-cta-indicator {
+  display: inline-block;
+  letter-spacing: -0.08em;
+  animation: intro-cta-indicator-shift 1.15s ease-in-out infinite;
+}
+
+@keyframes intro-cta-indicator-shift {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.62;
+  }
+  50% {
+    transform: translateX(6px);
+    opacity: 1;
+  }
+}
+
 .intro-cta-shell {
   display: flex;
   align-items: flex-end;
@@ -327,6 +346,7 @@ html, body, #root {
 .intro-mobile-cta-shell {
   position: relative;
   width: min(92vw, 420px);
+  justify-content: center;
   gap: 14px;
   align-items: center;
   padding: 12px 14px 10px;
@@ -354,6 +374,18 @@ html, body, #root {
 .intro-mobile-cta-shell > * {
   position: relative;
   z-index: 1;
+}
+
+.intro-desktop-touch-wrap {
+  width: 98px;
+  height: 98px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 12px 20px rgba(0,0,0,0.3));
+}
+
+.intro-desktop-touch-lottie {
+  width: 100%;
+  height: 100%;
 }
 
 .intro-mobile-cta-shell .intro-cta-wave {
@@ -392,6 +424,66 @@ html, body, #root {
   justify-content: center;
   gap: 14px;
   margin-top: 18px;
+}
+
+.intro-mobile-bottom-wave-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  pointer-events: none;
+}
+
+.intro-mobile-bottom-wave-rail::before {
+  content: '';
+  position: absolute;
+  inset: -54px 0 0;
+  background:
+    radial-gradient(ellipse at center top, rgba(201,162,39,0.08), transparent 56%),
+    linear-gradient(180deg, rgba(7,10,13,0), rgba(7,10,13,0.3) 28%, rgba(7,10,13,0.82) 100%);
+  pointer-events: none;
+}
+
+.intro-mobile-bottom-wave {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: min(95vw, 520px);
+  height: 88px;
+  padding: 0 12px 6px;
+  opacity: 0.9;
+}
+
+.intro-mobile-bottom-wave::before {
+  content: '';
+  position: absolute;
+  inset: 16px 4px 0;
+  border-radius: 999px 999px 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
+    radial-gradient(ellipse at center, rgba(201,162,39,0.08), rgba(192,57,43,0.04) 42%, transparent 78%);
+  filter: blur(10px);
+  opacity: 0.7;
+}
+
+.intro-mobile-bottom-wave span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 4px;
+  height: var(--intro-mobile-wave-height);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(240,192,64,0.95), rgba(192,57,43,0.72));
+  box-shadow:
+    0 0 12px rgba(240,192,64,0.24),
+    0 0 24px rgba(192,57,43,0.14);
+  transform-origin: center bottom;
+  animation: intro-cta-wave-anim 1.4s ease-in-out infinite;
 }
 
 .intro-mobile-social-btn {
@@ -780,52 +872,77 @@ html, body, #root {
 
 .modal-close-btn {
   position: absolute;
-  top: 0.65rem;
-  right: 0.65rem;
+  top: 0.75rem;
+  right: 0.75rem;
   z-index: 10;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(139, 26, 26, 0.45);
-  border: 1px solid rgba(201, 162, 39, 0.25);
+  background: rgba(80, 16, 16, 0.82);
+  border: 1px solid rgba(201, 162, 39, 0.28);
   border-radius: 50%;
   cursor: pointer;
-  color: #e8e0d0;
-  font-size: 0.85rem;
+  color: #f2e9d1;
   line-height: 1;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-close-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .modal-close-btn:hover {
-  background: rgba(192, 57, 43, 0.65);
+  transform: scale(1.05);
+  background: rgba(160, 28, 28, 0.9);
   border-color: rgba(201, 162, 39, 0.6);
   box-shadow: 0 0 14px 3px rgba(201, 162, 39, 0.2);
 }
 
-/* Play indicator on card */
-.card-play-hint {
+/* Transparent play button on cards */
+.card-play-overlay {
   position: absolute;
-  bottom: 0.75rem;
-  right: 0.75rem;
+  inset: 0;
+  z-index: 12;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.55rem;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(201, 162, 39, 0.3);
-  border-radius: 4px;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  color: rgba(201, 162, 39, 0.8);
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  pointer-events: none;
+  justify-content: center;
 }
 
-.card-play-hint.visible {
+.card-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  color: rgba(246, 231, 184, 0.78);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 0.82;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease,
+    color 0.25s ease,
+    filter 0.25s ease;
+}
+
+.card-play-btn.active {
   opacity: 1;
-  transform: translateY(0);
+  color: rgba(255, 241, 196, 0.94);
+  transform: translateY(-2px) scale(1.08);
+  filter: drop-shadow(0 0 18px rgba(201, 162, 39, 0.3));
+}
+
+.card-play-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  overflow: visible;
+  filter:
+    drop-shadow(0 8px 22px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 0 14px rgba(201, 162, 39, 0.24));
 }
