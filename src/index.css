@@ -590,135 +590,60 @@ html, body, #root {
 
 .visit-counter {
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
-  padding: 1rem 1.2rem 1.1rem;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 26px;
-  background:
-    linear-gradient(180deg, rgba(8,10,14,0.84), rgba(5,7,10,0.72)),
-    radial-gradient(circle at top left, rgba(201,162,39,0.16), transparent 54%),
-    radial-gradient(circle at bottom right, rgba(192,57,43,0.16), transparent 46%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow:
-    0 24px 56px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 0 0 1px rgba(201,162,39,0.06);
-}
-
-.visit-counter::before {
-  content: '';
-  position: absolute;
-  inset: 0 12px auto;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), rgba(201,162,39,0.65), transparent);
-  opacity: 0.95;
-}
-
-.visit-counter__glow {
-  position: absolute;
-  inset: auto -20% -35% auto;
-  width: 70%;
-  height: 85%;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(201,162,39,0.2), rgba(201,162,39,0));
-  filter: blur(18px);
-  pointer-events: none;
-}
-
-.visit-counter__head {
-  position: relative;
-  z-index: 1;
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: 0.3rem;
+  text-align: center;
 }
 
-.visit-counter__eyebrow {
-  color: rgba(255,255,255,0.76);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-}
-
-.visit-counter__status {
-  flex-shrink: 0;
-  padding: 0.3rem 0.58rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.82);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.visit-counter__value-row {
+.visit-counter__label,
+.visit-counter__value {
+  display: block;
   position: relative;
   z-index: 1;
+}
+
+.visit-counter__label {
+  color: rgba(255,255,255,0.86);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-shadow:
+    0 3px 12px rgba(0,0,0,0.45),
+    0 0 14px rgba(255,255,255,0.05);
 }
 
 .visit-counter__value {
-  display: block;
   color: #ffffff;
-  font-size: clamp(2rem, 5.6vw, 3.8rem);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.05em;
+  font-size: clamp(1.8rem, 4.2vw, 3rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
   text-shadow:
-    0 10px 22px rgba(0,0,0,0.42),
+    0 8px 18px rgba(0,0,0,0.42),
     0 0 24px rgba(255,255,255,0.08);
-}
-
-.visit-counter__caption {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  color: rgba(255,255,255,0.6);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .visit-counter.is-loading .visit-counter__value {
   animation: visit-counter-pulse 1.1s ease-in-out infinite;
 }
 
-.visit-counter.is-loading .visit-counter__status {
+.visit-counter.is-error .visit-counter__value,
+.visit-counter.is-setup .visit-counter__value {
   color: rgba(255,255,255,0.72);
 }
 
-.visit-counter.is-error .visit-counter__status {
-  border-color: rgba(192,57,43,0.28);
-  background: rgba(192,57,43,0.12);
-  color: rgba(255,255,255,0.8);
-}
-
-.visit-counter.is-setup .visit-counter__status {
-  border-color: rgba(201,162,39,0.26);
-  background: rgba(201,162,39,0.12);
-  color: rgba(255,245,215,0.92);
-}
-
 .visit-counter--desktop {
-  width: min(28vw, 360px);
-  align-items: flex-end;
-  text-align: right;
+  width: min(22vw, 280px);
 }
 
 .visit-counter--mobile {
-  width: min(86vw, 430px);
+  width: min(74vw, 280px);
   margin: 0 auto;
-  align-items: center;
-  text-align: center;
 }
 
 @keyframes visit-counter-pulse {
@@ -818,31 +743,16 @@ html, body, #root {
   }
 
   .visit-counter {
-    gap: 0.7rem;
-    padding: 0.9rem 1rem 1rem;
-    border-radius: 22px;
+    gap: 0.25rem;
   }
 
-  .visit-counter__head {
-    flex-direction: column;
-    gap: 0.45rem;
-  }
-
-  .visit-counter__eyebrow {
-    font-size: 0.66rem;
+  .visit-counter__label {
+    font-size: 0.62rem;
     letter-spacing: 0.24em;
   }
 
-  .visit-counter__status {
-    font-size: 0.54rem;
-  }
-
   .visit-counter__value {
-    font-size: clamp(1.9rem, 10vw, 3.2rem);
-  }
-
-  .visit-counter__caption {
-    font-size: 0.68rem;
+    font-size: clamp(1.55rem, 8vw, 2.4rem);
   }
 }
 

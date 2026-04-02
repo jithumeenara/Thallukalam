@@ -180,28 +180,10 @@ export default function VisitCounter({ variant }: { variant: Variant }) {
       className={`visit-counter visit-counter--${variant} ${isLoading ? 'is-loading' : ''} ${isError ? 'is-error' : ''} ${isSetup ? 'is-setup' : ''}`}
       aria-live="polite"
     >
-      <div className="visit-counter__glow" aria-hidden="true" />
-
-      <div className="visit-counter__head">
-        <span className="visit-counter__eyebrow">TOTAL VISITS</span>
-        <span className="visit-counter__status">
-          {isSetup ? 'setup' : isError ? 'offline' : isLoading ? 'loading' : 'ga4'}
-        </span>
-      </div>
-
-      <div className="visit-counter__value-row">
-        <span className="visit-counter__value">
-          {isSetup || isError ? '--' : formatCount(displayCount)}
-        </span>
-      </div>
-
-      <p className="visit-counter__caption">
-        {isSetup
-          ? 'Set GA4 server credentials in Vercel'
-          : isError
-            ? 'Google Analytics unavailable right now'
-            : 'Google Analytics page views for this landing page'}
-      </p>
+      <span className="visit-counter__label">TOTAL VISITS</span>
+      <span className="visit-counter__value">
+        {isSetup || isError ? '--' : formatCount(displayCount)}
+      </span>
     </section>
   )
 }
