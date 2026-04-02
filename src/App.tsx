@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { Suspense, lazy, useState, useRef, useEffect } from 'react'
 import HeroSection from './components/HeroSection'
-import CardsGrid from './components/CardsGrid'
-import ScrollingBanner from './components/ScrollingBanner'
-import Footer from './components/Footer'
 import VolumeButton from './components/VolumeButton'
-import AdminPage from './pages/AdminPage'
+
+// ── Lazy-load everything below the fold (code-split into separate chunks)
+// These never block the initial parse — browser downloads them in parallel
+// while the hero section renders.
+const CardsGrid      = lazy(() => import('./components/CardsGrid'))
+const ScrollingBanner = lazy(() => import('./components/ScrollingBanner'))
+const Footer         = lazy(() => import('./components/Footer'))
+const AdminPage      = lazy(() => import('./pages/AdminPage'))
 
 const IS_ADMIN = window.location.pathname === '/admin'
 
@@ -19,12 +23,10 @@ export default function App() {
     audio.loop   = true
     audio.volume = 0.35
     audioRef.current = audio
-
     audio.play().catch(() => {
       function unlock() { audio.play().catch(() => {}) }
       document.addEventListener('click', unlock, { once: true })
     })
-
     return () => { audio.pause() }
   }, [])
 
@@ -40,7 +42,11 @@ export default function App() {
     return () => window.removeEventListener('thallikalam:videoplaying', handleVideoPlaying)
   }, [])
 
-  if (IS_ADMIN) return <AdminPage />
+  if (IS_ADMIN) return (
+    <Suspense fallback={null}>
+      <AdminPage />
+    </Suspense>
+  )
 
   function handleToggleMute() {
     const audio = audioRef.current
@@ -52,10 +58,20 @@ export default function App() {
   return (
     <div className="min-h-screen bg-cinema-bg font-malayalam">
       <VolumeButton isMuted={isMuted} onToggle={handleToggleMute} />
+
+      {/* Critical path — loads immediately */}
       <HeroSection />
-      <CardsGrid />
-      <ScrollingBanner />
-      <Footer />
+
+      {/* Below the fold — deferred, load in parallel after initial render */}
+      <Suspense fallback={null}>
+        <CardsGrid />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ScrollingBanner />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }

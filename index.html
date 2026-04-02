@@ -2,11 +2,26 @@
 <html lang="ml">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0B0F14" />
   <title>തല്ലുകാലം | Thallukaalam</title>
   <meta name="description" content="തമ്മിൽ തല്ലി നാട് കുട്ടിച്ചോറാക്കിയ കാലം" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="തല്ലുകാലം | Thallukaalam" />
+  <meta property="og:description" content="തമ്മിൽ തല്ലി നാട് കുട്ടിച്ചോറാക്കിയ കാലം" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:image"       content="/logo.svg" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+
+  <!-- Preload the logo — it is the LCP element on both desktop and mobile -->
+  <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
+
+  <!-- DNS prefetch for GitHub raw (CardsGrid fetches cards-data.json from there) -->
+  <link rel="dns-prefetch"  href="https://raw.githubusercontent.com" />
+  <link rel="preconnect"    href="https://raw.githubusercontent.com" crossorigin />
 
   <!-- Font is self-hosted via @fontsource-variable/anek-malayalam (no CDN) -->
 </head>

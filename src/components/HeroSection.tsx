@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import Lottie from 'lottie-react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import goldSpinner from '../animations/gold-spinner.json'
 import loadingDots from '../animations/loading-dots.json'
+
+// ── lottie-react is ~250 KB — split into its own chunk so it never blocks
+// the initial HTML parse. The loading overlay text + logo show instantly;
+// the Lottie animations swap in once the chunk arrives (fast, same CDN).
+const Lottie = lazy(() => import('lottie-react'))
 
 const BANNER_VIDEO_WEBM = '/banar_video/banner.webm'
 const BANNER_VIDEO_MP4  = '/banar_video/banner.mp4'
@@ -25,7 +29,7 @@ export default function HeroSection() {
     if (!video) return
     const done = () => setReady(true)
     video.addEventListener('canplay', done)
-    video.addEventListener('error',   done)   // show content even on load failure
+    video.addEventListener('error',   done)
     video.load()
     return () => {
       video.removeEventListener('canplay', done)
@@ -48,6 +52,7 @@ export default function HeroSection() {
           alt="തല്ലുകാലം"
           className="w-[72vw] h-auto"
           draggable={false}
+          fetchPriority="high"
           style={{ animation: 'fade-up 0.9s ease-out 0.2s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.2s infinite' }}
         />
       </div>
@@ -60,20 +65,24 @@ export default function HeroSection() {
         </video>
       </div>
 
-      {/* Loading overlay */}
+      {/* Loading overlay — text + logo render instantly; Lottie swaps in async */}
       {!ready && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-cinema-bg">
           <div className="relative w-36 h-36 mb-4">
-            <Lottie animationData={goldSpinner} loop autoplay className="w-full h-full" />
+            <Suspense fallback={<div className="w-full h-full" />}>
+              <Lottie animationData={goldSpinner} loop autoplay className="w-full h-full" />
+            </Suspense>
             <div className="absolute inset-0 flex items-center justify-center">
-              <img src="/logo.svg" alt="" className="w-12 h-12 opacity-60 animate-flicker" />
+              <img src="/logo.svg" alt="" className="w-12 h-12 opacity-60 animate-flicker" fetchPriority="high" />
             </div>
           </div>
           <p className="text-cinema-gold/55 text-[0.7rem] tracking-[0.28em] uppercase mb-4">
             ലോഡ് ചെയ്യുന്നു...
           </p>
           <div className="w-24 h-8">
-            <Lottie animationData={loadingDots} loop autoplay className="w-full h-full" />
+            <Suspense fallback={<div className="w-24 h-8" />}>
+              <Lottie animationData={loadingDots} loop autoplay className="w-full h-full" />
+            </Suspense>
           </div>
         </div>
       )}
@@ -100,7 +109,7 @@ export default function HeroSection() {
       <div className="hidden sm:flex relative z-30 flex-col items-center justify-center min-h-screen px-4 pt-16 pb-28 text-center">
         <div className="w-[min(560px,78vw)] mb-6"
           style={{ animation: 'fade-up 1s ease-out 0.3s both, logo-dance 2.8s cubic-bezier(0.4,0,0.6,1) 1.3s infinite' }}>
-          <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto" draggable={false} />
+          <img src="/logo.svg" alt="തല്ലുകാലം" className="w-full h-auto" draggable={false} fetchPriority="high" />
         </div>
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-35"
           style={{ animation: 'fade-up 1s ease-out 1.5s both' }}>
